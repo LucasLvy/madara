@@ -300,7 +300,7 @@
         <span class="kw">let </span>sender_address = H256::from_low_u64_be(<span class="number">1</span>).to_fixed_bytes();
         <span class="kw">let </span>hex = <span class="string">&quot;0x0000000000000000000000000000000000000000000000000000000000000001&quot;</span>.to_owned();
         <span class="kw">let </span>test_message: Message =
-            Message { topics: <span class="macro">vec!</span>[hex.clone(), hex.clone(), hex.clone(), hex.clone()], data: hex.clone() };
+            Message { topics: <span class="macro">vec!</span>[hex.clone(), hex.clone(), hex.clone(), hex.clone()], data: hex };
         <span class="kw">let </span>expected_tx = Transaction {
             version: U256::default(),
             hash: H256::default(),
@@ -325,14 +325,14 @@
     </span><span class="kw">fn </span>test_try_into_transaction_incorrect_topic_should_fail() {
         <span class="kw">let </span>hex = <span class="string">&quot;0x1&quot;</span>.to_owned();
         <span class="kw">let </span>test_message: Message =
-            Message { topics: <span class="macro">vec!</span>[hex.clone(), hex.clone(), <span class="string">&quot;foo&quot;</span>.to_owned(), hex.clone()], data: hex.clone() };
+            Message { topics: <span class="macro">vec!</span>[hex.clone(), hex.clone(), <span class="string">&quot;foo&quot;</span>.to_owned(), hex.clone()], data: hex };
         <span class="macro">assert_eq!</span>(test_message.try_into_transaction().unwrap_err(), OffchainWorkerError::HexDecodeError);
     }
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_try_into_transaction_empty_data_should_fail() {
         <span class="kw">let </span>hex = <span class="string">&quot;0x1&quot;</span>.to_owned();
         <span class="kw">let </span>test_message: Message =
-            Message { topics: <span class="macro">vec!</span>[hex.clone(), hex.clone(), hex.clone(), hex.clone()], data: <span class="string">&quot;&quot;</span>.to_owned() };
+            Message { topics: <span class="macro">vec!</span>[hex.clone(), hex.clone(), hex.clone(), hex], data: <span class="string">&quot;&quot;</span>.to_owned() };
         <span class="macro">assert_eq!</span>(test_message.try_into_transaction().unwrap_err(), OffchainWorkerError::EmptyData);
     }
 }
