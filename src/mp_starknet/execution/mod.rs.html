@@ -98,6 +98,9 @@
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Starknet execution functionality.
 
 </span><span class="kw">use </span>alloc::collections::BTreeMap;
@@ -133,7 +136,7 @@
     v.clone().into_inner().serialize(serializer)
 }
 
-<span class="doccomment">/// Serialization of [Option&lt;BoundedBTreeMap&gt;].
+<span class="doccomment">/// Serialization of [`Option&lt;BoundedBTreeMap&gt;`].
 /// This is needed for the genesis config.
 </span><span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
 </span><span class="kw">pub fn </span>serialize_option_bounded_btreemap&lt;SE: Serializer, K, V, S&gt;(
@@ -164,7 +167,7 @@
         .map_err(|<span class="kw">_</span>| DeserializationError::custom(<span class="string">&quot;Couldn&#39;t convert BTreeMap to BoundedBTreeMap&quot;</span>.to_string()))
 }
 
-<span class="doccomment">/// Deserialization of an [Option&lt;BoundedBTreeMap&gt;] object.
+<span class="doccomment">/// Deserialization of an [`Option&lt;BoundedBTreeMap&gt;`] object.
 /// This is needed for the genesis config.
 </span><span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
 </span><span class="kw">pub fn </span>deserialize_option_bounded_btreemap&lt;<span class="lifetime">&#39;de</span>, D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;, K, V, S&gt;(
@@ -189,10 +192,13 @@
 <span class="doccomment">/// All the types related to the execution of a transaction.
 </span><span class="kw">pub mod </span>types {
     <span class="doccomment">/// Type wrapper for a contract address.
-    </span><span class="kw">pub type </span>ContractAddressWrapper = [u8; <span class="number">32</span>];
+    </span><span class="kw">pub type </span>ContractAddressWrapper = Felt252Wrapper;
+
+    <span class="doccomment">/// Type wrapper for a storage key;
+    </span><span class="kw">pub type </span>StorageKeyWrapper = Felt252Wrapper;
 
     <span class="doccomment">/// Wrapper type for class hash field.
-    </span><span class="kw">pub type </span>ClassHashWrapper = [u8; <span class="number">32</span>];
+    </span><span class="kw">pub type </span>ClassHashWrapper = Felt252Wrapper;
     <span class="kw">pub use </span><span class="kw">super</span>::call_entrypoint_wrapper::<span class="kw-2">*</span>;
     <span class="kw">pub use </span><span class="kw">super</span>::contract_class_wrapper::<span class="kw-2">*</span>;
     <span class="kw">pub use </span><span class="kw">super</span>::entrypoint_wrapper::<span class="kw-2">*</span>;

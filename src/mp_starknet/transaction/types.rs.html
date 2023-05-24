@@ -448,6 +448,38 @@
 <a href="#448" id="448">448</a>
 <a href="#449" id="449">449</a>
 <a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
+<a href="#469" id="469">469</a>
+<a href="#470" id="470">470</a>
+<a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
 </pre><pre class="rust"><code><span class="kw">use </span>alloc::collections::BTreeMap;
 <span class="kw">use </span>alloc::string::String;
 
@@ -457,7 +489,7 @@
 <span class="kw">use </span>blockifier::transaction::errors::TransactionExecutionError;
 <span class="kw">use </span>blockifier::transaction::transaction_types::TransactionType;
 <span class="kw">use </span>frame_support::BoundedVec;
-<span class="kw">use </span>sp_core::{ConstU32, H256, U256};
+<span class="kw">use </span>sp_core::{ConstU32, U256};
 <span class="kw">use </span>starknet_api::transaction::Fee;
 <span class="kw">use </span>starknet_api::StarknetApiError;
 
@@ -466,6 +498,7 @@
 };
 <span class="kw">use </span><span class="kw">crate</span>::execution::call_entrypoint_wrapper::MaxCalldataSize;
 <span class="kw">use </span><span class="kw">crate</span>::execution::entrypoint_wrapper::EntryPointTypeWrapper;
+<span class="kw">use </span><span class="kw">crate</span>::execution::program_wrapper::Felt252Wrapper;
 <span class="kw">use </span><span class="kw">crate</span>::execution::types::{CallEntryPointWrapper, ContractAddressWrapper, ContractClassWrapper};
 
 <span class="doccomment">/// Max size of arrays.
@@ -503,6 +536,33 @@
     </span>EntrypointExecution(EntryPointExecutionError),
     <span class="doccomment">/// Unexpected holes.
     </span>UnexpectedHoles(String),
+}
+
+<span class="kw">impl </span>From&lt;TransactionValidationErrorWrapper&gt; <span class="kw">for </span>TransactionExecutionErrorWrapper {
+    <span class="kw">fn </span>from(error: TransactionValidationErrorWrapper) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>error {
+            TransactionValidationErrorWrapper::TransactionValidationError(e) =&gt; <span class="self">Self</span>::TransactionExecution(e),
+            TransactionValidationErrorWrapper::CalldataError(e) =&gt; <span class="self">Self</span>::StarknetApi(e),
+        }
+    }
+}
+
+<span class="doccomment">/// Wrapper type for transaction validation result.
+</span><span class="kw">pub type </span>TransactionValidationResultWrapper&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, TransactionValidationErrorWrapper&gt;;
+
+<span class="doccomment">/// Wrapper type for transaction validation error.
+</span><span class="attr">#[derive(Debug)]
+</span><span class="kw">pub enum </span>TransactionValidationErrorWrapper {
+    <span class="doccomment">/// Transaction execution error
+    </span>TransactionValidationError(TransactionExecutionError),
+    <span class="doccomment">/// Calldata error
+    </span>CalldataError(StarknetApiError),
+}
+
+<span class="kw">impl </span>From&lt;EntryPointExecutionError&gt; <span class="kw">for </span>TransactionValidationErrorWrapper {
+    <span class="kw">fn </span>from(error: EntryPointExecutionError) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::TransactionValidationError(TransactionExecutionError::from(error))
+    }
 }
 
 <span class="doccomment">/// Different tx types.
@@ -568,13 +628,13 @@
     <span class="doccomment">/// Transaction sender address.
     </span><span class="kw">pub </span>sender_address: ContractAddressWrapper,
     <span class="doccomment">/// Class hash to declare.
-    </span><span class="kw">pub </span>compiled_class_hash: [u8; <span class="number">32</span>],
+    </span><span class="kw">pub </span>compiled_class_hash: Felt252Wrapper,
     <span class="doccomment">/// Contract to declare.
     </span><span class="kw">pub </span>contract_class: ContractClassWrapper,
     <span class="doccomment">/// Account contract nonce.
     </span><span class="kw">pub </span>nonce: U256,
     <span class="doccomment">/// Transaction signature.
-    </span><span class="kw">pub </span>signature: BoundedVec&lt;H256, MaxArraySize&gt;,
+    </span><span class="kw">pub </span>signature: BoundedVec&lt;Felt252Wrapper, MaxArraySize&gt;,
     <span class="doccomment">/// Max fee.
     </span><span class="kw">pub </span>max_fee: U256,
 }
@@ -598,15 +658,15 @@
     <span class="doccomment">/// Transaction sender address.
     </span><span class="kw">pub </span>sender_address: ContractAddressWrapper,
     <span class="doccomment">/// Transaction calldata.
-    </span><span class="kw">pub </span>calldata: BoundedVec&lt;U256, MaxCalldataSize&gt;,
+    </span><span class="kw">pub </span>calldata: BoundedVec&lt;Felt252Wrapper, MaxCalldataSize&gt;,
     <span class="doccomment">/// Account contract nonce.
     </span><span class="kw">pub </span>nonce: U256,
     <span class="doccomment">/// Transaction salt.
     </span><span class="kw">pub </span>salt: U256,
     <span class="doccomment">/// Transaction signature.
-    </span><span class="kw">pub </span>signature: BoundedVec&lt;H256, MaxArraySize&gt;,
+    </span><span class="kw">pub </span>signature: BoundedVec&lt;Felt252Wrapper, MaxArraySize&gt;,
     <span class="doccomment">/// Account class hash.
-    </span><span class="kw">pub </span>account_class_hash: [u8; <span class="number">32</span>],
+    </span><span class="kw">pub </span>account_class_hash: Felt252Wrapper,
     <span class="doccomment">/// Max fee.
     </span><span class="kw">pub </span>max_fee: U256,
 }
@@ -657,11 +717,11 @@
     <span class="doccomment">/// Transaction sender address.
     </span><span class="kw">pub </span>sender_address: ContractAddressWrapper,
     <span class="doccomment">/// Transaction calldata.
-    </span><span class="kw">pub </span>calldata: BoundedVec&lt;U256, MaxCalldataSize&gt;,
+    </span><span class="kw">pub </span>calldata: BoundedVec&lt;Felt252Wrapper, MaxCalldataSize&gt;,
     <span class="doccomment">/// Account contract nonce.
     </span><span class="kw">pub </span>nonce: U256,
     <span class="doccomment">/// Transaction signature.
-    </span><span class="kw">pub </span>signature: BoundedVec&lt;H256, MaxArraySize&gt;,
+    </span><span class="kw">pub </span>signature: BoundedVec&lt;Felt252Wrapper, MaxArraySize&gt;,
     <span class="doccomment">/// Max fee.
     </span><span class="kw">pub </span>max_fee: U256,
 }
@@ -695,9 +755,9 @@
     <span class="doccomment">/// The version of the transaction.
     </span><span class="kw">pub </span>version: u8,
     <span class="doccomment">/// Transaction hash.
-    </span><span class="kw">pub </span>hash: H256,
+    </span><span class="kw">pub </span>hash: Felt252Wrapper,
     <span class="doccomment">/// Signature.
-    </span><span class="kw">pub </span>signature: BoundedVec&lt;H256, MaxArraySize&gt;,
+    </span><span class="kw">pub </span>signature: BoundedVec&lt;Felt252Wrapper, MaxArraySize&gt;,
     <span class="doccomment">/// Sender Address
     </span><span class="kw">pub </span>sender_address: ContractAddressWrapper,
     <span class="doccomment">/// Nonce
@@ -732,7 +792,7 @@
     <span class="kw">fn </span>from(value: InvokeTransaction) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             version: value.version,
-            hash: calculate_invoke_tx_hash(value.clone()),
+            hash: calculate_invoke_tx_hash(value.clone()).into(),
             signature: value.signature,
             sender_address: value.sender_address,
             nonce: value.nonce,
@@ -754,7 +814,7 @@
     <span class="kw">fn </span>from(value: DeclareTransaction) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             version: value.version,
-            hash: calculate_declare_tx_hash(value.clone()),
+            hash: calculate_declare_tx_hash(value.clone()).into(),
             signature: value.signature,
             sender_address: value.sender_address,
             nonce: value.nonce,
@@ -777,7 +837,7 @@
     <span class="kw">fn </span>from(value: DeployAccountTransaction) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             version: value.version,
-            hash: calculate_deploy_account_tx_hash(value.clone()),
+            hash: calculate_deploy_account_tx_hash(value.clone()).into(),
             signature: value.signature,
             sender_address: value.sender_address,
             nonce: value.nonce,
@@ -809,11 +869,15 @@
 #[cfg_attr(feature = <span class="string">&quot;std&quot;</span>, derive(serde::Serialize, serde::Deserialize))]
 </span><span class="kw">pub struct </span>TransactionReceiptWrapper {
     <span class="doccomment">/// Transaction hash.
-    </span><span class="kw">pub </span>transaction_hash: H256,
+    </span><span class="kw">pub </span>transaction_hash: Felt252Wrapper,
     <span class="doccomment">/// Fee paid for the transaction.
-    </span><span class="kw">pub </span>actual_fee: U256,
+    </span><span class="kw">pub </span>actual_fee: Felt252Wrapper,
     <span class="doccomment">/// Transaction type
     </span><span class="kw">pub </span>tx_type: TxType,
+    <span class="doccomment">/// Block Number
+    </span><span class="kw">pub </span>block_number: u64,
+    <span class="doccomment">/// Block Hash
+    </span><span class="kw">pub </span>block_hash: Felt252Wrapper,
     <span class="doccomment">/// Messages sent in the transaction.
     </span><span class="comment">// pub messages_sent: BoundedVec&lt;Message, MaxArraySize&gt;, // TODO: add messages
     </span><span class="doccomment">/// Events emitted in the transaction.
@@ -834,14 +898,14 @@
 #[cfg_attr(feature = <span class="string">&quot;std&quot;</span>, derive(serde::Serialize, serde::Deserialize))]
 </span><span class="kw">pub struct </span>EventWrapper {
     <span class="doccomment">/// The keys (topics) of the event.
-    </span><span class="kw">pub </span>keys: BoundedVec&lt;H256, MaxArraySize&gt;,
+    </span><span class="kw">pub </span>keys: BoundedVec&lt;Felt252Wrapper, MaxArraySize&gt;,
     <span class="doccomment">/// The data of the event.
-    </span><span class="kw">pub </span>data: BoundedVec&lt;H256, MaxArraySize&gt;,
+    </span><span class="kw">pub </span>data: BoundedVec&lt;Felt252Wrapper, MaxArraySize&gt;,
     <span class="doccomment">/// The address that emitted the event
     </span><span class="kw">pub </span>from_address: ContractAddressWrapper,
 }
 
-<span class="doccomment">/// This struct wraps the [TransactionExecutionInfo] type from the blockifier.
+<span class="doccomment">/// This struct wraps the \[TransactionExecutionInfo\] type from the blockifier.
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>TransactionExecutionInfoWrapper {
     <span class="doccomment">/// Transaction validation call info; [None] for `L1Handler`.
