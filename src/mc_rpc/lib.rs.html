@@ -616,6 +616,77 @@
 <a href="#616" id="616">616</a>
 <a href="#617" id="617">617</a>
 <a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
+<a href="#621" id="621">621</a>
+<a href="#622" id="622">622</a>
+<a href="#623" id="623">623</a>
+<a href="#624" id="624">624</a>
+<a href="#625" id="625">625</a>
+<a href="#626" id="626">626</a>
+<a href="#627" id="627">627</a>
+<a href="#628" id="628">628</a>
+<a href="#629" id="629">629</a>
+<a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a>
+<a href="#637" id="637">637</a>
+<a href="#638" id="638">638</a>
+<a href="#639" id="639">639</a>
+<a href="#640" id="640">640</a>
+<a href="#641" id="641">641</a>
+<a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
+<a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
+<a href="#664" id="664">664</a>
+<a href="#665" id="665">665</a>
+<a href="#666" id="666">666</a>
+<a href="#667" id="667">667</a>
+<a href="#668" id="668">668</a>
+<a href="#669" id="669">669</a>
+<a href="#670" id="670">670</a>
+<a href="#671" id="671">671</a>
+<a href="#672" id="672">672</a>
+<a href="#673" id="673">673</a>
+<a href="#674" id="674">674</a>
+<a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+<a href="#677" id="677">677</a>
+<a href="#678" id="678">678</a>
+<a href="#679" id="679">679</a>
+<a href="#680" id="680">680</a>
+<a href="#681" id="681">681</a>
+<a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
+<a href="#684" id="684">684</a>
+<a href="#685" id="685">685</a>
+<a href="#686" id="686">686</a>
+<a href="#687" id="687">687</a>
+<a href="#688" id="688">688</a>
+<a href="#689" id="689">689</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Starknet RPC server API implementation
 //!
 //! It uses the madara client and backend in order to answer queries.
@@ -629,12 +700,13 @@
 <span class="kw">use </span>errors::StarknetRpcApiError;
 <span class="kw">use </span>jsonrpsee::core::{async_trait, RpcResult};
 <span class="kw">use </span>log::error;
-<span class="kw">use </span>mc_rpc_core::utils::{to_deploy_account_tx, to_invoke_tx, to_rpc_contract_class};
+<span class="kw">use </span>mc_rpc_core::utils::{to_declare_tx, to_deploy_account_tx, to_invoke_tx, to_rpc_contract_class, to_tx};
 <span class="kw">pub use </span>mc_rpc_core::StarknetRpcApiServer;
 <span class="kw">use </span>mc_storage::OverrideHandle;
 <span class="kw">use </span>mp_starknet::block::BlockTransactions;
-<span class="kw">use </span>mp_starknet::crypto::hash::pedersen::PedersenHasher;
 <span class="kw">use </span>mp_starknet::execution::types::Felt252Wrapper;
+<span class="kw">use </span>mp_starknet::traits::hash::HasherT;
+<span class="kw">use </span>mp_starknet::traits::ThreadSafeCopy;
 <span class="kw">use </span>mp_starknet::transaction::types::{RPCTransactionConversionError, Transaction <span class="kw">as </span>MPTransaction, TxType};
 <span class="kw">use </span>pallet_starknet::runtime_api::{ConvertTransactionRuntimeApi, StarknetRuntimeApi};
 <span class="kw">use </span>sc_client_api::backend::{Backend, StorageProvider};
@@ -646,23 +718,23 @@
 <span class="kw">use </span>sp_core::H256;
 <span class="kw">use </span>sp_runtime::generic::BlockId <span class="kw">as </span>SPBlockId;
 <span class="kw">use </span>sp_runtime::traits::{Block <span class="kw">as </span>BlockT, Header <span class="kw">as </span>HeaderT};
-<span class="kw">use </span>starknet_core::types::FieldElement;
-<span class="kw">use </span>starknet_providers::jsonrpc::models::{
+<span class="kw">use </span>starknet_core::types::{
     BlockHashAndNumber, BlockId, BlockStatus, BlockTag, BlockWithTxHashes, BlockWithTxs, BroadcastedDeclareTransaction,
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
-    DeclareTransactionResult, DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate, FunctionCall,
-    InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, StateUpdate, SyncStatus,
-    SyncStatusType, Transaction,
+    DeclareTransactionResult, DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate, FieldElement,
+    FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, StateUpdate,
+    SyncStatus, SyncStatusType, Transaction,
 };
 
 <span class="doccomment">/// A Starknet RPC server for Madara
-</span><span class="kw">pub struct </span>Starknet&lt;B: BlockT, BE, C, P&gt; {
+</span><span class="kw">pub struct </span>Starknet&lt;B: BlockT, BE, C, P, H&gt; {
     client: Arc&lt;C&gt;,
     backend: Arc&lt;mc_db::Backend&lt;B&gt;&gt;,
     overrides: Arc&lt;OverrideHandle&lt;B&gt;&gt;,
     pool: Arc&lt;P&gt;,
     sync_service: Arc&lt;SyncingService&lt;B&gt;&gt;,
     starting_block: &lt;&lt;B&gt;::Header <span class="kw">as </span>HeaderT&gt;::Number,
+    hasher: Arc&lt;H&gt;,
     _marker: PhantomData&lt;(B, BE)&gt;,
 }
 
@@ -673,10 +745,11 @@
 // * `overrides` - The OverrideHandle
 // * `sync_service` - The Substrate client sync service
 // * `starting_block` - The starting block for the syncing
+// * `hasher` - The hasher used by the runtime
 //
 // # Returns
 // * `Self` - The actual Starknet struct
-</span><span class="kw">impl</span>&lt;B: BlockT, BE, C, P&gt; Starknet&lt;B, BE, C, P&gt; {
+</span><span class="kw">impl</span>&lt;B: BlockT, BE, C, P, H&gt; Starknet&lt;B, BE, C, P, H&gt; {
     <span class="kw">pub fn </span>new(
         client: Arc&lt;C&gt;,
         backend: Arc&lt;mc_db::Backend&lt;B&gt;&gt;,
@@ -684,12 +757,13 @@
         pool: Arc&lt;P&gt;,
         sync_service: Arc&lt;SyncingService&lt;B&gt;&gt;,
         starting_block: &lt;&lt;B&gt;::Header <span class="kw">as </span>HeaderT&gt;::Number,
+        hasher: Arc&lt;H&gt;,
     ) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{ client, backend, overrides, pool, sync_service, starting_block, _marker: PhantomData }
+        <span class="self">Self </span>{ client, backend, overrides, pool, sync_service, starting_block, hasher, _marker: PhantomData }
     }
 }
 
-<span class="kw">impl</span>&lt;B, BE, C, P&gt; Starknet&lt;B, BE, C, P&gt;
+<span class="kw">impl</span>&lt;B, BE, C, P, H&gt; Starknet&lt;B, BE, C, P, H&gt;
 <span class="kw">where
     </span>B: BlockT,
     C: HeaderBackend&lt;B&gt; + <span class="lifetime">&#39;static</span>,
@@ -699,13 +773,14 @@
     }
 }
 
-<span class="kw">impl</span>&lt;B, BE, C, P&gt; Starknet&lt;B, BE, C, P&gt;
+<span class="kw">impl</span>&lt;B, BE, C, P, H&gt; Starknet&lt;B, BE, C, P, H&gt;
 <span class="kw">where
     </span>B: BlockT,
     C: HeaderBackend&lt;B&gt; + StorageProvider&lt;B, BE&gt; + <span class="lifetime">&#39;static</span>,
     C: ProvideRuntimeApi&lt;B&gt;,
     C::Api: StarknetRuntimeApi&lt;B&gt; + ConvertTransactionRuntimeApi&lt;B&gt;,
     BE: Backend&lt;B&gt;,
+    H: HasherT + ThreadSafeCopy,
 {
     <span class="kw">pub fn </span>current_block_hash(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;H256, ApiError&gt; {
         <span class="kw">let </span>substrate_block_hash = <span class="self">self</span>.client.info().best_hash;
@@ -716,7 +791,7 @@
             .current_block(substrate_block_hash)
             .unwrap_or_default();
 
-        <span class="prelude-val">Ok</span>(block.header().hash(PedersenHasher::default()).into())
+        <span class="prelude-val">Ok</span>(block.header().hash(<span class="kw-2">*</span><span class="self">self</span>.hasher).into())
     }
 
     <span class="doccomment">/// Returns the substrate block corresponding to the given Starknet block id
@@ -746,7 +821,7 @@
 
 <span class="attr">#[async_trait]
 #[allow(unused_variables)]
-</span><span class="kw">impl</span>&lt;B, BE, C, P&gt; StarknetRpcApiServer <span class="kw">for </span>Starknet&lt;B, BE, C, P&gt;
+</span><span class="kw">impl</span>&lt;B, BE, C, P, H&gt; StarknetRpcApiServer <span class="kw">for </span>Starknet&lt;B, BE, C, P, H&gt;
 <span class="kw">where
     </span>B: BlockT,
     P: TransactionPool&lt;Block = B&gt; + <span class="lifetime">&#39;static</span>,
@@ -754,6 +829,7 @@
     C: HeaderBackend&lt;B&gt; + StorageProvider&lt;B, BE&gt; + <span class="lifetime">&#39;static</span>,
     C: ProvideRuntimeApi&lt;B&gt;,
     C::Api: StarknetRuntimeApi&lt;B&gt; + ConvertTransactionRuntimeApi&lt;B&gt;,
+    H: HasherT + ThreadSafeCopy,
 {
     <span class="kw">fn </span>block_number(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; RpcResult&lt;u64&gt; {
         <span class="self">self</span>.current_block_number()
@@ -930,13 +1006,13 @@
                 <span class="kw">if </span>starting_block.is_ok() &amp;&amp; current_block.is_ok() &amp;&amp; highest_block.is_ok() {
                     <span class="comment">// Convert block numbers and hashes to the respective type required by the `syncing` endpoint.
                     </span><span class="kw">let </span>starting_block_num = UniqueSaturatedInto::&lt;u64&gt;::unique_saturated_into(<span class="self">self</span>.starting_block);
-                    <span class="kw">let </span>starting_block_hash = starting_block<span class="question-mark">?</span>.header().hash(PedersenHasher::default()).<span class="number">0</span>;
+                    <span class="kw">let </span>starting_block_hash = starting_block<span class="question-mark">?</span>.header().hash(<span class="kw-2">*</span><span class="self">self</span>.hasher).<span class="number">0</span>;
 
                     <span class="kw">let </span>current_block_num = UniqueSaturatedInto::&lt;u64&gt;::unique_saturated_into(best_number);
-                    <span class="kw">let </span>current_block_hash = current_block<span class="question-mark">?</span>.header().hash(PedersenHasher::default()).<span class="number">0</span>;
+                    <span class="kw">let </span>current_block_hash = current_block<span class="question-mark">?</span>.header().hash(<span class="kw-2">*</span><span class="self">self</span>.hasher).<span class="number">0</span>;
 
                     <span class="kw">let </span>highest_block_num = UniqueSaturatedInto::&lt;u64&gt;::unique_saturated_into(highest_number);
-                    <span class="kw">let </span>highest_block_hash = highest_block<span class="question-mark">?</span>.header().hash(PedersenHasher::default()).<span class="number">0</span>;
+                    <span class="kw">let </span>highest_block_hash = highest_block<span class="question-mark">?</span>.header().hash(<span class="kw-2">*</span><span class="self">self</span>.hasher).<span class="number">0</span>;
 
                     <span class="comment">// Build the `SyncStatus` struct with the respective syn information
                     </span><span class="prelude-val">Ok</span>(SyncStatusType::Syncing(SyncStatus {
@@ -999,7 +1075,7 @@
             .unwrap_or_default();
 
         <span class="kw">let </span>transactions = block.transactions_hashes().into_iter().map(FieldElement::from).collect();
-        <span class="kw">let </span>blockhash = block.header().hash(PedersenHasher::default());
+        <span class="kw">let </span>blockhash = block.header().hash(<span class="kw-2">*</span><span class="self">self</span>.hasher);
         <span class="kw">let </span>parent_blockhash = block.header().parent_block_hash;
         <span class="kw">let </span>block_with_tx_hashes = BlockWithTxHashes {
             transactions,
@@ -1107,7 +1183,7 @@
 
         <span class="kw">let </span>deploy_account_transaction = to_deploy_account_tx(deploy_account_transaction).map_err(|e| {
             <span class="macro">error!</span>(<span class="string">&quot;{e}&quot;</span>);
-            StarknetRpcApiError::ClassHashNotFound
+            StarknetRpcApiError::InternalServerError
         })<span class="question-mark">?</span>;
 
         <span class="kw">let </span>transaction: MPTransaction = deploy_account_transaction.into();
@@ -1117,22 +1193,59 @@
             .convert_transaction(best_block_hash, transaction.clone(), TxType::DeployAccount)
             .map_err(|e| {
                 <span class="macro">error!</span>(<span class="string">&quot;Failed to convert transaction: {:?}&quot;</span>, e);
-                StarknetRpcApiError::ClassHashNotFound
+                StarknetRpcApiError::InternalServerError
             })<span class="question-mark">?
             </span>.map_err(|e| {
                 <span class="macro">error!</span>(<span class="string">&quot;Failed to convert transaction: {:?}&quot;</span>, e);
-                StarknetRpcApiError::ClassHashNotFound
+                StarknetRpcApiError::InternalServerError
             })<span class="question-mark">?</span>;
 
         <span class="self">self</span>.pool.submit_one(<span class="kw-2">&amp;</span>SPBlockId::hash(best_block_hash), TX_SOURCE, extrinsic).<span class="kw">await</span>.map_err(|e| {
             <span class="macro">error!</span>(<span class="string">&quot;Failed to submit extrinsic: {:?}&quot;</span>, e);
-            StarknetRpcApiError::ClassHashNotFound
+            StarknetRpcApiError::InternalServerError
         })<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(DeployAccountTransactionResult {
             transaction_hash: transaction.hash.into(),
             contract_address: transaction.sender_address.into(),
         })
+    }
+
+    <span class="doccomment">/// Estimate the fee associated with transaction
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - starknet transaction request
+    /// * `block_id` - hash of the requested block, number (height), or tag
+    ///
+    /// # Returns
+    ///
+    /// * `fee_estimate` - fee estimate in gwei
+    </span><span class="kw">async fn </span>estimate_fee(<span class="kw-2">&amp;</span><span class="self">self</span>, request: BroadcastedTransaction, block_id: BlockId) -&gt; RpcResult&lt;FeeEstimate&gt; {
+        <span class="comment">// TODO:
+        //      - modify BroadcastedTransaction to assert versions == &quot;0x100000000000000000000000000000001&quot;
+        //      - to ensure broadcasted query signatures aren&#39;t valid on mainnet
+
+        </span><span class="kw">let </span>substrate_block_hash = <span class="self">self</span>.substrate_block_hash_from_starknet_block(block_id).map_err(|e| {
+            <span class="macro">error!</span>(<span class="string">&quot;&#39;{e}&#39;&quot;</span>);
+            StarknetRpcApiError::BlockNotFound
+        })<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>tx = to_tx(request)<span class="question-mark">?</span>;
+        <span class="kw">let </span>(actual_fee, gas_usage) = <span class="self">self
+            </span>.client
+            .runtime_api()
+            .estimate_fee(substrate_block_hash, tx)
+            .map_err(|e| {
+                <span class="macro">error!</span>(<span class="string">&quot;Request parameters error: {e}&quot;</span>);
+                StarknetRpcApiError::InternalServerError
+            })<span class="question-mark">?
+            </span>.map_err(|e| {
+                <span class="macro">error!</span>(<span class="string">&quot;Failed to call function: {:#?}&quot;</span>, e);
+                StarknetRpcApiError::ContractError
+            })<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(FeeEstimate { gas_price: <span class="number">0</span>, gas_consumed: gas_usage, overall_fee: actual_fee })
     }
 
     <span class="comment">// Returns the details of a transaction by a given block id and index
@@ -1182,7 +1295,7 @@
         <span class="kw">let </span>block_with_txs = BlockWithTxs {
             <span class="comment">// TODO: Get status from block
             </span>status: BlockStatus::AcceptedOnL2,
-            block_hash: block.header().hash(PedersenHasher::default()).into(),
+            block_hash: block.header().hash(<span class="kw-2">*</span><span class="self">self</span>.hasher).into(),
             parent_hash: block.header().parent_block_hash.into(),
             block_number: block.header().block_number.as_u64(),
             new_root: block.header().global_state_root.into(),
@@ -1206,11 +1319,6 @@
         <span class="macro">todo!</span>(<span class="string">&quot;Not implemented&quot;</span>)
     }
 
-    <span class="doccomment">/// Estimate the fee for a given Starknet transaction
-    </span><span class="kw">async fn </span>estimate_fee(<span class="kw-2">&amp;</span><span class="self">self</span>, request: BroadcastedTransaction, block_id: BlockId) -&gt; RpcResult&lt;FeeEstimate&gt; {
-        <span class="macro">todo!</span>(<span class="string">&quot;Not implemented&quot;</span>)
-    }
-
     <span class="doccomment">/// Returns the transactions in the transaction pool, recognized by this sequencer
     </span><span class="kw">async fn </span>pending_transactions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; RpcResult&lt;Vec&lt;Transaction&gt;&gt; {
         <span class="macro">todo!</span>(<span class="string">&quot;Not implemented&quot;</span>)
@@ -1226,12 +1334,46 @@
         <span class="macro">todo!</span>(<span class="string">&quot;Not implemented&quot;</span>)
     }
 
-    <span class="doccomment">/// Submit a new transaction to be added to the chain
+    <span class="doccomment">/// Submit a new declare transaction to be added to the chain
+    ///
+    /// # Arguments
+    ///
+    /// * `declare_transaction` - the declare transaction to be added to the chain
+    ///
+    /// # Returns
+    ///
+    /// * `declare_transaction_result` - the result of the declare transaction
     </span><span class="kw">async fn </span>add_declare_transaction(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         declare_transaction: BroadcastedDeclareTransaction,
     ) -&gt; RpcResult&lt;DeclareTransactionResult&gt; {
-        <span class="macro">todo!</span>(<span class="string">&quot;Not implemented&quot;</span>)
+        <span class="kw">let </span>best_block_hash = <span class="self">self</span>.client.info().best_hash;
+
+        <span class="kw">let </span>declare_tx = to_declare_tx(declare_transaction).map_err(|e| {
+            <span class="macro">error!</span>(<span class="string">&quot;{e}&quot;</span>);
+            StarknetRpcApiError::InternalServerError
+        })<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>transaction: MPTransaction = declare_tx.into();
+        <span class="kw">let </span>extrinsic = <span class="self">self
+            </span>.client
+            .runtime_api()
+            .convert_transaction(best_block_hash, transaction.clone(), TxType::Declare)
+            .map_err(|e| {
+                <span class="macro">error!</span>(<span class="string">&quot;Failed to convert transaction: {:?}&quot;</span>, e);
+                StarknetRpcApiError::InternalServerError
+            })<span class="question-mark">?
+            </span>.map_err(|e| {
+                <span class="macro">error!</span>(<span class="string">&quot;Failed to convert transaction: {:?}&quot;</span>, e);
+                StarknetRpcApiError::InternalServerError
+            })<span class="question-mark">?</span>;
+
+        <span class="self">self</span>.pool.submit_one(<span class="kw-2">&amp;</span>SPBlockId::hash(best_block_hash), TX_SOURCE, extrinsic).<span class="kw">await</span>.map_err(|e| {
+            <span class="macro">error!</span>(<span class="string">&quot;Failed to submit extrinsic: {:?}&quot;</span>, e);
+            StarknetRpcApiError::InternalServerError
+        })<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(DeclareTransactionResult { transaction_hash: transaction.hash.into(), class_hash: FieldElement::ZERO })
     }
 }
 </code></pre></div>
