@@ -1,8 +1,7 @@
 //! Traits for hashing.
 
+use sp_core::U256;
 use starknet_crypto::FieldElement;
-
-use crate::execution::felt252_wrapper::Felt252Wrapper;
 
 /// A trait for hashing.
 pub trait HasherT {
@@ -11,7 +10,7 @@ pub trait HasherT {
     /// * `data` - The data to hash.
     /// # Returns
     /// The hash of the data.
-    fn hash(&self, data: &[u8]) -> Felt252Wrapper;
+    fn hash(&self, data: &[u8]) -> U256;
 }
 
 /// A trait for default hashing instance.

@@ -1,8 +1,9 @@
 use frame_support::{assert_ok, bounded_vec};
 use lazy_static::lazy_static;
 use mp_starknet::crypto::commitment::calculate_invoke_tx_hash;
-use mp_starknet::execution::types::{ContractClassWrapper, Felt252Wrapper};
+use mp_starknet::execution::types::ContractClassWrapper;
 use mp_starknet::transaction::types::{EventWrapper, InvokeTransaction};
+use sp_core::U256;
 
 use super::mock::*;
 use super::utils::get_contract_class_wrapper;
@@ -27,29 +28,28 @@ fn given_erc20_transfer_when_invoke_then_it_works() {
             sender_address: sender_account,
             calldata: bounded_vec![
                 sender_account, // Simple contract address
-                Felt252Wrapper::from_hex_be("0x02730079d734ee55315f4f141eaed376bddd8c2133523d223a344c5604e0f7f8")
+                U256::from_str_radix("0x02730079d734ee55315f4f141eaed376bddd8c2133523d223a344c5604e0f7f8", 16)
                     .unwrap(), // deploy_contract selector
-                Felt252Wrapper::from_hex_be("0x9").unwrap(), // Calldata len
-                Felt252Wrapper::from_hex_be(TOKEN_CONTRACT_CLASS_HASH).unwrap(), // Class hash
-                Felt252Wrapper::ONE, // Contract address salt
-                Felt252Wrapper::from_hex_be("0x6").unwrap(), // Constructor_calldata_len
-                Felt252Wrapper::from_hex_be("0xA").unwrap(), // Name
-                Felt252Wrapper::from_hex_be("0x1").unwrap(), // Symbol
-                Felt252Wrapper::from_hex_be("0x2").unwrap(), // Decimals
-                Felt252Wrapper::from_hex_be("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap(), // Initial supply low
-                Felt252Wrapper::from_hex_be("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap(), // Initial supply high
+                U256::from_str_radix("0x9", 16).unwrap(), // Calldata len
+                U256::from_str_radix(TOKEN_CONTRACT_CLASS_HASH, 16).unwrap(), // Class hash
+                U256::one(), // Contract address salt
+                U256::from_str_radix("0x6", 16).unwrap(), // Constructor_calldata_len
+                U256::from_str_radix("0xA", 16).unwrap(), // Name
+                U256::from_str_radix("0x1", 16).unwrap(), // Symbol
+                U256::from_str_radix("0x2", 16).unwrap(), // Decimals
+                U256::from_str_radix("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16).unwrap(), // Initial supply low
+                U256::from_str_radix("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16).unwrap(), // Initial supply high
                 sender_account  // recipient
             ],
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
             signature: bounded_vec!(),
         };
-        let chain_id = Starknet::chain_id().0.to_bytes_be();
-        let chain_id = std::str::from_utf8(&chain_id[..]).unwrap();
-        let transaction_hash = calculate_invoke_tx_hash(deploy_transaction.clone(), chain_id);
+        let chain_id = Starknet::chain_id_str();
+        let transaction_hash = calculate_invoke_tx_hash(deploy_transaction.clone(), &chain_id);
 
         let expected_erc20_address =
-            Felt252Wrapper::from_hex_be("0x00dc58c1280862c95964106ef9eba5d9ed8c0c16d05883093e4540f22b829dff").unwrap();
+            U256::from_str_radix("0x00dc58c1280862c95964106ef9eba5d9ed8c0c16d05883093e4540f22b829dff", 16).unwrap();
 
         assert_ok!(Starknet::invoke(origin.clone(), deploy_transaction));
         let events = System::events();
@@ -57,29 +57,29 @@ fn given_erc20_transfer_when_invoke_then_it_works() {
         pretty_assertions::assert_eq!(
             Event::<MockRuntime>::StarknetEvent(EventWrapper {
                 keys: bounded_vec![
-                    Felt252Wrapper::from_hex_be("0x026b160f10156dea0639bec90696772c640b9706a47f5b8c52ea1abe5858b34d")
+                    U256::from_str_radix("0x026b160f10156dea0639bec90696772c640b9706a47f5b8c52ea1abe5858b34d", 16)
                         .unwrap()
                 ],
                 data: bounded_vec!(
                     expected_erc20_address, // Contract address
-                    Felt252Wrapper::ZERO,   /* Deployer (always 0 with this
+                    U256::zero(),   /* Deployer (always 0 with this
                                              * account contract) */
-                    Felt252Wrapper::from_hex_be(TOKEN_CONTRACT_CLASS_HASH).unwrap(), // Class hash
-                    Felt252Wrapper::from_hex_be("0x0000000000000000000000000000000000000000000000000000000000000006")
+                    U256::from_str_radix(TOKEN_CONTRACT_CLASS_HASH, 16).unwrap(), // Class hash
+                    U256::from_str_radix("0x0000000000000000000000000000000000000000000000000000000000000006", 16)
                         .unwrap(), // Constructor calldata len
-                    Felt252Wrapper::from_hex_be("0x000000000000000000000000000000000000000000000000000000000000000a")
+                    U256::from_str_radix("0x000000000000000000000000000000000000000000000000000000000000000a", 16)
                         .unwrap(), // Name
-                    Felt252Wrapper::from_hex_be("0x0000000000000000000000000000000000000000000000000000000000000001")
+                    U256::from_str_radix("0x0000000000000000000000000000000000000000000000000000000000000001", 16)
                         .unwrap(), // Symbol
-                    Felt252Wrapper::from_hex_be("0x0000000000000000000000000000000000000000000000000000000000000002")
+                    U256::from_str_radix("0x0000000000000000000000000000000000000000000000000000000000000002", 16)
                         .unwrap(), // Decimals
-                    Felt252Wrapper::from_hex_be("0x000000000000000000000000000000000fffffffffffffffffffffffffffffff")
+                    U256::from_str_radix("0x000000000000000000000000000000000fffffffffffffffffffffffffffffff", 16)
                         .unwrap(), // Initial supply low
-                    Felt252Wrapper::from_hex_be("0x000000000000000000000000000000000fffffffffffffffffffffffffffffff")
+                    U256::from_str_radix("0x000000000000000000000000000000000fffffffffffffffffffffffffffffff", 16)
                         .unwrap(), // Initial supply high
-                    Felt252Wrapper::from_hex_be("0x01a3339ec92ac1061e3e0f8e704106286c642eaf302e94a582e5f95ef5e6b4d0")
+                    U256::from_str_radix("0x01a3339ec92ac1061e3e0f8e704106286c642eaf302e94a582e5f95ef5e6b4d0", 16)
                         .unwrap(), // Recipient
-                    Felt252Wrapper::from_hex_be("0x0000000000000000000000000000000000000000000000000000000000000001")
+                    U256::from_str_radix("0x0000000000000000000000000000000000000000000000000000000000000001", 16)
                         .unwrap(), // Salt
                 ),
                 from_address: sender_account,
@@ -89,16 +89,16 @@ fn given_erc20_transfer_when_invoke_then_it_works() {
         );
         let expected_fee_transfer_event = Event::StarknetEvent(EventWrapper {
             keys: bounded_vec![
-                Felt252Wrapper::from_hex_be("0x0099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9")
+                U256::from_str_radix("0x0099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9", 16)
                     .unwrap()
             ],
             data: bounded_vec!(
                 sender_account, // From
-                Felt252Wrapper::from_hex_be("0x0000000000000000000000000000000000000000000000000000000000000002")
+                U256::from_str_radix("0x0000000000000000000000000000000000000000000000000000000000000002", 16)
                     .unwrap(), // Sequencer address
-                Felt252Wrapper::from_hex_be("0x000000000000000000000000000000000000000000000000000000000002b660")
+                U256::from_str_radix("0x000000000000000000000000000000000000000000000000000000000002b660", 16)
                     .unwrap(), // Amount low
-                Felt252Wrapper::ZERO, // Amount high
+                U256::zero(), // Amount high
             ),
             from_address: Starknet::fee_token_address(),
             transaction_hash,
@@ -115,81 +115,80 @@ fn given_erc20_transfer_when_invoke_then_it_works() {
             sender_address: sender_account,
             calldata: bounded_vec![
                 expected_erc20_address, // Token address
-                Felt252Wrapper::from_hex_be("0x0083afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e")
+                U256::from_str_radix("0x0083afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e", 16)
                     .unwrap(), // transfer selector
-                Felt252Wrapper::THREE,  // Calldata len
-                Felt252Wrapper::from(16u128), // recipient
-                Felt252Wrapper::from(15u128), // initial supply low
-                Felt252Wrapper::ZERO,   // initial supply high
+                U256::from(3),  // Calldata len
+                U256::from(16u128), // recipient
+                U256::from(15u128), // initial supply low
+                U256::zero(),   // initial supply high
             ],
-            nonce: Felt252Wrapper::ONE,
-            max_fee: Felt252Wrapper::from(u128::MAX),
+            nonce: U256::one(),
+            max_fee: U256::from(u128::MAX),
             signature: bounded_vec!(),
         };
-        let chain_id = Starknet::chain_id().0.to_bytes_be();
-        let chain_id = std::str::from_utf8(&chain_id[..]).unwrap();
-        let transaction_hash = calculate_invoke_tx_hash(transfer_transaction.clone(), chain_id);
+        let chain_id = Starknet::chain_id_str();
+        let transaction_hash = calculate_invoke_tx_hash(transfer_transaction.clone(), &chain_id);
 
         // Also asserts that the deployment has been saved.
         assert_ok!(Starknet::invoke(origin, transfer_transaction));
         pretty_assertions::assert_eq!(
             Starknet::storage((
                 expected_erc20_address,
-                Into::<Felt252Wrapper>::into(
-                    Felt252Wrapper::from_hex_be("03701645da930cd7f63318f7f118a9134e72d64ab73c72ece81cae2bd5fb403f")
+                Into::<U256>::into(
+                    U256::from_str_radix("03701645da930cd7f63318f7f118a9134e72d64ab73c72ece81cae2bd5fb403f", 16)
                         .unwrap()
                 )
             )),
-            Felt252Wrapper::from_hex_be("ffffffffffffffffffffffffffffff0").unwrap()
+            U256::from_str_radix("ffffffffffffffffffffffffffffff0", 16).unwrap()
         );
         pretty_assertions::assert_eq!(
             Starknet::storage((
                 expected_erc20_address,
-                Into::<Felt252Wrapper>::into(
-                    Felt252Wrapper::from_hex_be("03701645da930cd7f63318f7f118a9134e72d64ab73c72ece81cae2bd5fb4040")
+                Into::<U256>::into(
+                    U256::from_str_radix("03701645da930cd7f63318f7f118a9134e72d64ab73c72ece81cae2bd5fb4040", 16)
                         .unwrap()
                 )
             )),
-            Felt252Wrapper::from_hex_be("fffffffffffffffffffffffffffffff").unwrap()
+            U256::from_str_radix("fffffffffffffffffffffffffffffff", 16).unwrap()
         );
 
         pretty_assertions::assert_eq!(
             Starknet::storage((
                 expected_erc20_address,
-                Into::<Felt252Wrapper>::into(
-                    Felt252Wrapper::from_hex_be("0x011cb0dc747a73020cbd50eac7460edfaa7d67b0e05823b882b05c3f33b1c73e")
+                Into::<U256>::into(
+                    U256::from_str_radix("0x011cb0dc747a73020cbd50eac7460edfaa7d67b0e05823b882b05c3f33b1c73e", 16)
                         .unwrap()
                 )
             )),
-            Felt252Wrapper::from(15u128)
+            U256::from(15u128)
         );
         pretty_assertions::assert_eq!(
             Starknet::storage((
                 expected_erc20_address,
-                Into::<Felt252Wrapper>::into(
-                    Felt252Wrapper::from_hex_be("0x011cb0dc747a73020cbd50eac7460edfaa7d67b0e05823b882b05c3f33b1c73f")
+                Into::<U256>::into(
+                    U256::from_str_radix("0x011cb0dc747a73020cbd50eac7460edfaa7d67b0e05823b882b05c3f33b1c73f", 16)
                         .unwrap()
                 )
             )),
-            Felt252Wrapper::ZERO
+            U256::zero()
         );
 
         let events = System::events();
         // Check regular event.
         let expected_event = Event::StarknetEvent(EventWrapper {
             keys: bounded_vec![
-                Felt252Wrapper::from_hex_be("0x0099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9")
+                U256::from_str_radix("0x0099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9", 16)
                     .unwrap()
             ],
             data: bounded_vec!(
-                Felt252Wrapper::from_hex_be("0x01a3339ec92ac1061e3e0f8e704106286c642eaf302e94a582e5f95ef5e6b4d0")
+                U256::from_str_radix("0x01a3339ec92ac1061e3e0f8e704106286c642eaf302e94a582e5f95ef5e6b4d0", 16)
                     .unwrap(), // From
-                Felt252Wrapper::from_hex_be("0x10").unwrap(), // To
-                Felt252Wrapper::from_hex_be("0xF").unwrap(),  // Amount low
-                Felt252Wrapper::ZERO,                         // Amount high
+                U256::from_str_radix("0x10", 16).unwrap(), // To
+                U256::from_str_radix("0xF", 16).unwrap(),  // Amount low
+                U256::zero(),                         // Amount high
             ),
-            from_address: Felt252Wrapper::from_hex_be(
-                "0x00dc58c1280862c95964106ef9eba5d9ed8c0c16d05883093e4540f22b829dff",
+            from_address: U256::from_str_radix(
+                "0x00dc58c1280862c95964106ef9eba5d9ed8c0c16d05883093e4540f22b829dff", 16
             )
             .unwrap(),
             transaction_hash,
@@ -199,14 +198,14 @@ fn given_erc20_transfer_when_invoke_then_it_works() {
         // Check fee transfer.
         let expected_fee_transfer_event = Event::StarknetEvent(EventWrapper {
             keys: bounded_vec![
-                Felt252Wrapper::from_hex_be("0x0099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9")
+                U256::from_str_radix("0x0099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9", 16)
                     .unwrap()
             ],
             data: bounded_vec!(
                 sender_account,                                  // From
-                Felt252Wrapper::from_hex_be("0x2").unwrap(),     // Sequencer address
-                Felt252Wrapper::from_hex_be("0x1e618").unwrap(), // Amount low
-                Felt252Wrapper::ZERO,                            // Amount high
+                U256::from_str_radix("0x2", 16).unwrap(),     // Sequencer address
+                U256::from_str_radix("0x1e618", 16).unwrap(), // Amount low
+                U256::zero(),                            // Amount high
             ),
             from_address: Starknet::fee_token_address(),
             transaction_hash,

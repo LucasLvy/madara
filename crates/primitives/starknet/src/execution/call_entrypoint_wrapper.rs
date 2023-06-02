@@ -5,7 +5,7 @@ use blockifier::execution::entry_point::{CallEntryPoint, CallInfo, CallType, Exe
 use blockifier::state::state_api::State;
 use blockifier::transaction::objects::AccountTransactionContext;
 use frame_support::BoundedVec;
-use sp_core::ConstU32;
+use sp_core::{ConstU32, U256};
 use starknet_api::api_core::{ChainId, ClassHash, ContractAddress, EntryPointSelector};
 use starknet_api::hash::StarkFelt;
 use starknet_api::transaction::Calldata;
@@ -14,7 +14,7 @@ use starknet_api::StarknetApiError;
 use super::entrypoint_wrapper::{
     EntryPointExecutionErrorWrapper, EntryPointExecutionResultWrapper, EntryPointTypeWrapper,
 };
-use super::types::{ClassHashWrapper, ContractAddressWrapper, Felt252Wrapper};
+use super::types::{ClassHashWrapper, ContractAddressWrapper};
 use crate::block::Block as StarknetBlock;
 
 /// Max number of calldata / tx.
@@ -39,9 +39,9 @@ pub struct CallEntryPointWrapper {
     pub entrypoint_type: EntryPointTypeWrapper,
     /// The entrypoint selector
     /// An invoke transaction without an entry point selector invokes the 'execute' function.
-    pub entrypoint_selector: Option<Felt252Wrapper>,
+    pub entrypoint_selector: Option<U256>,
     /// The Calldata
-    pub calldata: BoundedVec<Felt252Wrapper, MaxCalldataSize>,
+    pub calldata: BoundedVec<U256, MaxCalldataSize>,
     /// The storage address
     pub storage_address: ContractAddressWrapper,
     /// The caller address
@@ -53,8 +53,8 @@ impl CallEntryPointWrapper {
     pub fn new(
         class_hash: Option<ClassHashWrapper>,
         entrypoint_type: EntryPointTypeWrapper,
-        entrypoint_selector: Option<Felt252Wrapper>,
-        calldata: BoundedVec<Felt252Wrapper, MaxCalldataSize>,
+        entrypoint_selector: Option<U256>,
+        calldata: BoundedVec<U256, MaxCalldataSize>,
         storage_address: ContractAddressWrapper,
         caller_address: ContractAddressWrapper,
     ) -> Self {
@@ -102,7 +102,7 @@ impl Default for CallEntryPointWrapper {
         Self {
             class_hash: None,
             entrypoint_type: EntryPointTypeWrapper::External,
-            entrypoint_selector: Some(Felt252Wrapper::default()),
+            entrypoint_selector: Some(U256::default()),
             calldata: BoundedVec::default(),
             storage_address: ContractAddressWrapper::default(),
             caller_address: ContractAddressWrapper::default(),
@@ -131,7 +131,7 @@ impl TryInto<CallEntryPoint> for CallEntryPointWrapper {
                     .clone()
                     .into_inner()
                     .iter()
-                    .map(|x| StarkFelt::try_from(format!("0x{:X}", x.0).as_str()).unwrap())
+                    .map(|x| StarkFelt::try_from(format!("0x{:X}", x).as_str()).unwrap())
                     .collect(),
             )),
             storage_address: ContractAddress::try_from(StarkFelt::new(self.storage_address.into())?)?,

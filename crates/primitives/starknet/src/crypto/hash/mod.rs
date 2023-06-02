@@ -1,5 +1,6 @@
 //! This module contains the hash functions used in the StarkNet protocol.
-use crate::execution::felt252_wrapper::Felt252Wrapper;
+use sp_core::U256;
+
 use crate::traits::hash::HasherT;
 use crate::traits::ThreadSafeCopy;
 
@@ -20,7 +21,7 @@ impl ThreadSafeCopy for Hasher {}
 
 /// Implement the `HasherT` trait for the `Hasher` enum.
 impl HasherT for Hasher {
-    fn hash(&self, data: &[u8]) -> Felt252Wrapper {
+    fn hash(&self, data: &[u8]) -> U256 {
         match self {
             Self::Pedersen(p) => p.hash(data),
             Self::Poseidon(p) => p.hash(data),
@@ -55,7 +56,7 @@ into_hasher! {
 /// # Returns
 ///
 /// The hash of the data.
-pub fn hash(hasher: Hasher, data: &[u8]) -> Felt252Wrapper {
+pub fn hash(hasher: Hasher, data: &[u8]) -> U256 {
     match hasher {
         Hasher::Pedersen(p) => p.hash(data),
         Hasher::Poseidon(p) => p.hash(data),

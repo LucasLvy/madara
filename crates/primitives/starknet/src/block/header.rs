@@ -1,12 +1,12 @@
 use blockifier::block_context::BlockContext;
 use scale_codec::Encode;
-use sp_core::U256;
+use sp_core::{H256, U256};
 use starknet_api::api_core::{ChainId, ContractAddress};
 use starknet_api::block::{BlockNumber, BlockTimestamp};
 use starknet_api::hash::StarkFelt;
 use starknet_api::stdlib::collections::HashMap;
 
-use crate::execution::types::{ContractAddressWrapper, Felt252Wrapper};
+use crate::execution::types::ContractAddressWrapper;
 use crate::traits::hash::HasherT;
 
 #[derive(
@@ -24,11 +24,11 @@ use crate::traits::hash::HasherT;
 /// Starknet header definition.
 pub struct Header {
     /// The hash of this block’s parent.
-    pub parent_block_hash: Felt252Wrapper,
+    pub parent_block_hash: U256,
     /// The number (height) of this block.
     pub block_number: U256,
     /// The state commitment after this block.
-    pub global_state_root: Felt252Wrapper,
+    pub global_state_root: U256,
     /// The Starknet address of the sequencer who created this block.
     pub sequencer_address: ContractAddressWrapper,
     /// The time the sequencer created this block before executing transactions
@@ -36,11 +36,11 @@ pub struct Header {
     /// The number of transactions in a block
     pub transaction_count: u128,
     /// A commitment to the transactions included in the block
-    pub transaction_commitment: Felt252Wrapper,
+    pub transaction_commitment: H256,
     /// The number of events
     pub event_count: u128,
     /// A commitment to the events produced in this block
-    pub event_commitment: Felt252Wrapper,
+    pub event_commitment: H256,
     /// The version of the Starknet protocol used when creating this block
     pub protocol_version: Option<u8>,
     /// Extraneous data that might be useful for running transactions
@@ -52,15 +52,15 @@ impl Header {
     #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub fn new(
-        parent_block_hash: Felt252Wrapper,
+        parent_block_hash: U256,
         block_number: U256,
-        global_state_root: Felt252Wrapper,
+        global_state_root: U256,
         sequencer_address: ContractAddressWrapper,
         block_timestamp: u64,
         transaction_count: u128,
-        transaction_commitment: Felt252Wrapper,
+        transaction_commitment: H256,
         event_count: u128,
-        event_commitment: Felt252Wrapper,
+        event_commitment: H256,
         protocol_version: Option<u8>,
         extra_data: Option<U256>,
     ) -> Self {
@@ -103,22 +103,22 @@ impl Header {
 
     /// Compute the hash of the header.
     #[must_use]
-    pub fn hash<H: HasherT>(&self, hasher: H) -> Felt252Wrapper {
+    pub fn hash<H: HasherT>(&self, hasher: H) -> U256 {
         <H as HasherT>::hash(&hasher, &self.block_number.encode())
     }
 }
 
 #[test]
 fn test_header_hash() {
-    let parent_block_hash = Felt252Wrapper::try_from(&[1; 32]).unwrap();
+    let parent_block_hash = U256::try_from(&[1; 32]).unwrap();
     let block_number = U256::from(42);
-    let global_state_root = Felt252Wrapper::from(12345_u128);
-    let sequencer_address = Felt252Wrapper::try_from(&[2; 32]).unwrap();
+    let global_state_root = U256::from(12345_u128);
+    let sequencer_address = U256::try_from(&[2; 32]).unwrap();
     let block_timestamp = 1620037184;
     let transaction_count = 2;
-    let transaction_commitment = Felt252Wrapper::try_from(&[3; 32]).unwrap();
+    let transaction_commitment = H256::try_from(&[3; 32]).unwrap();
     let event_count = 1;
-    let event_commitment = Felt252Wrapper::try_from(&[4; 32]).unwrap();
+    let event_commitment = H256::try_from(&[4; 32]).unwrap();
     let protocol_version = Some(1);
     let extra_data = None;
 
@@ -145,11 +145,16 @@ fn test_header_hash() {
 
 #[test]
 fn test_to_block_context() {
-    let sequencer_address = Felt252Wrapper::from_hex_be("0xFF").unwrap();
+    use hex::FromHex;
+    let sequencer_address = U256::from_big_endian(
+        &<[u8; 32]>::from_hex("00000000000000000000000000000000000000000000000000000000000000FF").unwrap(),
+    );
     // Create a block header.
     let block_header = Header { block_number: 1.into(), block_timestamp: 1, sequencer_address, ..Default::default() };
     // Create a fee token address.
-    let fee_token_address = Felt252Wrapper::from_hex_be("AA").unwrap();
+    let fee_token_address = U256::from_big_endian(
+        &<[u8; 32]>::from_hex("00000000000000000000000000000000000000000000000000000000000000AA").unwrap(),
+    );
     // Create a chain id.
     let chain_id = ChainId("0x1".to_string());
     // Try to serialize the block header.

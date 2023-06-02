@@ -7,13 +7,14 @@
 
 use mp_starknet::crypto::hash::Hasher;
 use mp_starknet::execution::types::{
-    ClassHashWrapper, ContractAddressWrapper, ContractClassWrapper, Felt252Wrapper, StorageKeyWrapper,
+    ClassHashWrapper, ContractAddressWrapper, ContractClassWrapper, StorageKeyWrapper,
 };
 use mp_starknet::transaction::types::{EventWrapper, Transaction, TxType};
 use sp_api::BlockT;
 pub extern crate alloc;
 use alloc::vec::Vec;
 
+use sp_core::U256;
 use sp_runtime::DispatchError;
 
 use crate::types::NonceWrapper;
@@ -21,7 +22,7 @@ use crate::types::NonceWrapper;
 sp_api::decl_runtime_apis! {
     pub trait StarknetRuntimeApi {
         /// Returns the current block hash.
-        fn current_block_hash() -> Felt252Wrapper;
+        fn current_block_hash() -> U256;
         /// Returns the current block.
         fn current_block() -> mp_starknet::block::Block;
         /// Returns the nonce associated with the given address in the given block
@@ -29,15 +30,15 @@ sp_api::decl_runtime_apis! {
         /// Returns the events associated with the given block
         fn events() -> Vec<EventWrapper>;
         /// Returns a storage slot value
-        fn get_storage_at(address: ContractAddressWrapper, key: StorageKeyWrapper) -> Result<Felt252Wrapper, DispatchError>;
+        fn get_storage_at(address: ContractAddressWrapper, key: StorageKeyWrapper) -> Result<U256, DispatchError>;
         /// Returns a `Call` response.
-        fn call(address: ContractAddressWrapper, function_selector: Felt252Wrapper, calldata: Vec<Felt252Wrapper>) -> Result<Vec<Felt252Wrapper>, DispatchError>;
+        fn call(address: ContractAddressWrapper, function_selector: U256, calldata: Vec<U256>) -> Result<Vec<U256>, DispatchError>;
         /// Returns the contract class hash at the given address.
         fn contract_class_hash_by_address(address: ContractAddressWrapper) -> Option<ClassHashWrapper>;
         /// Returns the contract class for the given class hash.
         fn contract_class_by_class_hash(class_hash: ClassHashWrapper) -> Option<ContractClassWrapper>;
         /// Returns the chain id.
-        fn chain_id() -> Felt252Wrapper;
+        fn chain_id() -> U256;
         /// Returns fee estimate
         fn estimate_fee(transaction: Transaction) -> Result<(u64, u64), DispatchError>;
         /// Returns the hasher used by the runtime.

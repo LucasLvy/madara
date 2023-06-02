@@ -2,8 +2,8 @@ use core::str::FromStr;
 
 use frame_support::parameter_types;
 use frame_support::traits::{ConstU16, ConstU64, GenesisBuild, Hooks};
-use mp_starknet::execution::types::{ContractClassWrapper, Felt252Wrapper};
-use sp_core::H256;
+use mp_starknet::execution::types::ContractClassWrapper;
+use sp_core::{H256, U256};
 use sp_runtime::testing::Header;
 use sp_runtime::traits::{BlakeTwo256, IdentityLookup};
 use starknet_api::api_core::{calculate_contract_address as _calculate_contract_address, ClassHash, ContractAddress};
@@ -86,11 +86,11 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
     let mut t = frame_system::GenesisConfig::default().build_storage::<MockRuntime>().unwrap();
 
     // ARGENT CLASSES
-    let proxy_class_hash = Felt252Wrapper::from_hex_be(ARGENT_PROXY_CLASS_HASH_V0).unwrap();
-    let account_class_hash_v0 = Felt252Wrapper::from_hex_be(ARGENT_ACCOUNT_CLASS_HASH_V0).unwrap();
+    let proxy_class_hash = U256::from_str_radix(ARGENT_PROXY_CLASS_HASH_V0, 16).unwrap();
+    let account_class_hash_v0 = U256::from_str_radix(ARGENT_ACCOUNT_CLASS_HASH_V0, 16).unwrap();
 
-    let blockifier_account_address = Felt252Wrapper::from_hex_be(BLOCKIFIER_ACCOUNT_ADDRESS).unwrap();
-    let blockifier_account_class_hash = Felt252Wrapper::from_hex_be(BLOCKIFIER_ACCOUNT_CLASS).unwrap();
+    let blockifier_account_address = U256::from_str_radix(BLOCKIFIER_ACCOUNT_ADDRESS, 16).unwrap();
+    let blockifier_account_class_hash = U256::from_str_radix(BLOCKIFIER_ACCOUNT_CLASS, 16).unwrap();
 
     // TEST CLASSES
     let argent_proxy_class = get_contract_class("argent_proxy_v0.json");
@@ -111,39 +111,38 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
     let (account_addr, _, _) = account_helper(TEST_ACCOUNT_SALT, AccountType::ArgentV0);
 
     // OPENZEPPELIN ACCOUNT CONTRACT
-    let openzeppelin_class_hash = Felt252Wrapper::from_hex_be(OPENZEPPELIN_ACCOUNT_CLASS_HASH).unwrap();
+    let openzeppelin_class_hash = U256::from_str_radix(OPENZEPPELIN_ACCOUNT_CLASS_HASH, 16).unwrap();
     let openzeppelin_account_address = get_account_address(AccountType::Openzeppelin);
 
     // ARGENT ACCOUNT CONTRACT
-    let argent_class_hash = Felt252Wrapper::from_hex_be(ARGENT_ACCOUNT_CLASS_HASH).unwrap();
+    let argent_class_hash = U256::from_str_radix(ARGENT_ACCOUNT_CLASS_HASH, 16).unwrap();
     let argent_account_address = get_account_address(AccountType::Argent);
 
     // BRAAVOS ACCOUNT CONTRACT
-    let braavos_class_hash = Felt252Wrapper::from_hex_be(BRAAVOS_ACCOUNT_CLASS_HASH).unwrap();
+    let braavos_class_hash = U256::from_str_radix(BRAAVOS_ACCOUNT_CLASS_HASH, 16).unwrap();
     let braavos_account_address = get_account_address(AccountType::Braavos);
-    let braavos_proxy_class_hash = Felt252Wrapper::from_hex_be(BRAAVOS_PROXY_CLASS_HASH).unwrap();
+    let braavos_proxy_class_hash = U256::from_str_radix(BRAAVOS_PROXY_CLASS_HASH, 16).unwrap();
     let braavos_proxy_address = get_account_address(AccountType::BraavosProxy);
 
     // UNAUTHORIZED INNER CALL ACCOUNT CONTRACT
-    let inner_call_account_class_hash =
-        Felt252Wrapper::from_hex_be(UNAUTHORIZED_INNER_CALL_ACCOUNT_CLASS_HASH).unwrap();
+    let inner_call_account_class_hash = U256::from_str_radix(UNAUTHORIZED_INNER_CALL_ACCOUNT_CLASS_HASH, 16).unwrap();
     let inner_call_account_address = get_account_address(AccountType::InnerCall);
 
     // SIMPLE ACCOUNT CONTRACT
-    let simple_account_class_hash = Felt252Wrapper::from_hex_be(SIMPLE_ACCOUNT_CLASS_HASH).unwrap();
+    let simple_account_class_hash = U256::from_str_radix(SIMPLE_ACCOUNT_CLASS_HASH, 16).unwrap();
     let simple_account_address = get_account_address(AccountType::NoValidate);
 
     // TEST CONTRACT
-    let other_contract_address = Felt252Wrapper::from_hex_be(TEST_CONTRACT_ADDRESS).unwrap();
-    let other_class_hash = Felt252Wrapper::from_hex_be(TEST_CLASS_HASH).unwrap();
+    let other_contract_address = U256::from_str_radix(TEST_CONTRACT_ADDRESS, 16).unwrap();
+    let other_class_hash = U256::from_str_radix(TEST_CLASS_HASH, 16).unwrap();
 
     // L1 HANDLER CONTRACT
-    let l1_handler_contract_address = Felt252Wrapper::from_hex_be(L1_HANDLER_CONTRACT_ADDRESS).unwrap();
-    let l1_handler_class_hash = Felt252Wrapper::from_hex_be(L1_HANDLER_CLASS_HASH).unwrap();
+    let l1_handler_contract_address = U256::from_str_radix(L1_HANDLER_CONTRACT_ADDRESS, 16).unwrap();
+    let l1_handler_class_hash = U256::from_str_radix(L1_HANDLER_CLASS_HASH, 16).unwrap();
 
     // FEE CONTRACT
-    let token_class_hash = Felt252Wrapper::from_hex_be(TOKEN_CONTRACT_CLASS_HASH).unwrap();
-    let fee_token_address = Felt252Wrapper::from_hex_be(FEE_TOKEN_ADDRESS).unwrap();
+    let token_class_hash = U256::from_str_radix(TOKEN_CONTRACT_CLASS_HASH, 16).unwrap();
+    let fee_token_address = U256::from_str_radix(FEE_TOKEN_ADDRESS, 16).unwrap();
 
     pallet_starknet::GenesisConfig::<MockRuntime> {
         contracts: vec![
@@ -177,58 +176,58 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
         storage: vec![
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[simple_account_address], 0),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[simple_account_address], 1),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[blockifier_account_address], 0),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[blockifier_account_address], 1),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[openzeppelin_account_address], 0),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[openzeppelin_account_address], 1),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[argent_account_address], 0),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[argent_account_address], 1),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[braavos_account_address], 0),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&fee_token_address, "ERC20_balances", &[braavos_account_address], 1),
-                Felt252Wrapper::from(u128::MAX),
+                U256::from(u128::MAX),
             ),
             (
                 get_storage_key(&openzeppelin_account_address, "Account_public_key", &[], 0),
-                Felt252Wrapper::from_hex_be(ACCOUNT_PUBLIC_KEY).unwrap(),
+                U256::from_str_radix(ACCOUNT_PUBLIC_KEY, 16).unwrap(),
             ),
             (
                 get_storage_key(&argent_account_address, "_signer", &[], 0),
-                Felt252Wrapper::from_hex_be(ACCOUNT_PUBLIC_KEY).unwrap(),
+                U256::from_str_radix(ACCOUNT_PUBLIC_KEY, 16).unwrap(),
             ),
             (
-                get_storage_key(&braavos_account_address, "Account_signers", &[Felt252Wrapper::ZERO], 0),
-                Felt252Wrapper::from_hex_be(ACCOUNT_PUBLIC_KEY).unwrap(),
+                get_storage_key(&braavos_account_address, "Account_signers", &[U256::zero()], 0),
+                U256::from_str_radix(ACCOUNT_PUBLIC_KEY, 16).unwrap(),
             ),
         ],
-        chain_id: Felt252Wrapper(FieldElement::from_byte_slice_be(b"SN_GOERLI").unwrap()),
+        chain_id: U256::from_big_endian(b"SN_GOERLI"),
         ..Default::default()
     }
     .assimilate_storage(&mut t)
@@ -256,19 +255,19 @@ pub(crate) fn run_to_block(n: u64) {
 /// starknet contract for storage_name(key_1, key_2, ..., key_n).
 /// https://docs.starknet.io/documentation/architecture_and_concepts/Contracts/contract-storage/#storage_variables
 pub fn get_storage_key(
-    address: &Felt252Wrapper,
+    address: &U256,
     storage_name: &str,
-    keys: &[Felt252Wrapper],
+    keys: &[U256],
     storage_key_offset: u64,
 ) -> ContractStorageKeyWrapper {
     let storage_key_offset = H256::from_low_u64_be(storage_key_offset);
     let mut storage_key = get_storage_var_address(
         storage_name,
-        keys.iter().map(|x| FieldElement::from(*x)).collect::<Vec<_>>().as_slice(),
+        keys.iter().map(|&x| FieldElement::from_bytes_be(&x.into()).unwrap()).collect::<Vec<_>>().as_slice(),
     )
     .unwrap();
     storage_key += FieldElement::from_bytes_be(&storage_key_offset.to_fixed_bytes()).unwrap();
-    (*address, storage_key.into())
+    (*address, U256::from_big_endian(&storage_key.to_bytes_be()))
 }
 
 pub enum AccountType {
@@ -282,7 +281,7 @@ pub enum AccountType {
 }
 
 /// Returns the account class hash, the contract data and the salt for an account type
-pub fn account_helper(salt: &str, account_type: AccountType) -> (Felt252Wrapper, Felt252Wrapper, Vec<&str>) {
+pub fn account_helper(salt: &str, account_type: AccountType) -> (U256, U256, Vec<&str>) {
     let (account_class_hash, cd_raw) = match account_type {
         AccountType::Argent => (H256::from_str(ARGENT_ACCOUNT_CLASS_HASH).unwrap(), vec![]),
         AccountType::ArgentV0 => (
@@ -310,11 +309,11 @@ pub fn account_helper(salt: &str, account_type: AccountType) -> (Felt252Wrapper,
     let account_salt = H256::from_str(salt).unwrap();
 
     let addr = calculate_contract_address(account_salt, account_class_hash, cd_raw.clone()).unwrap();
-    (addr.0.0.into(), account_class_hash.try_into().unwrap(), cd_raw)
+    (U256::from_big_endian(&addr.0.0.0), U256::from_big_endian(&account_class_hash.to_fixed_bytes()), cd_raw)
 }
 
 /// Returns the account address for an account type
-pub fn get_account_address(account_type: AccountType) -> Felt252Wrapper {
+pub fn get_account_address(account_type: AccountType) -> U256 {
     account_helper(TEST_ACCOUNT_SALT, account_type).0
 }
 

@@ -3,14 +3,14 @@ use madara_runtime::{
     AccountId, AuraConfig, BalancesConfig, EnableManualSeal, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
     SystemConfig, WASM_BINARY,
 };
-use mp_starknet::execution::types::{ContractClassWrapper, Felt252Wrapper};
+use mp_starknet::execution::types::ContractClassWrapper;
 use pallet_starknet::types::ContractStorageKeyWrapper;
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
 use sp_core::storage::Storage;
-use sp_core::{sr25519, Pair, Public, H256};
+use sp_core::{sr25519, Pair, Public, H256, U256};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_state_machine::BasicExternalities;
 use starknet_core::types::FieldElement;
@@ -182,19 +182,19 @@ pub fn get_contract_class(contract_content: &'static [u8]) -> ContractClass {
 /// starknet contract for storage_name(key_1, key_2, ..., key_n).
 /// https://docs.starknet.io/documentation/architecture_and_concepts/Contracts/contract-storage/#storage_variables
 pub fn get_storage_key(
-    address: &Felt252Wrapper,
+    address: &U256,
     storage_name: &str,
-    keys: &[Felt252Wrapper],
+    keys: &[U256],
     storage_key_offset: u64,
 ) -> ContractStorageKeyWrapper {
     let storage_key_offset = H256::from_low_u64_be(storage_key_offset);
     let mut storage_key = get_storage_var_address(
         storage_name,
-        keys.iter().map(|x| FieldElement::from(*x)).collect::<Vec<_>>().as_slice(),
+        keys.iter().map(|&x| FieldElement::from_bytes_be(&x.into()).unwrap()).collect::<Vec<_>>().as_slice(),
     )
     .unwrap();
     storage_key += FieldElement::from_bytes_be(&storage_key_offset.to_fixed_bytes()).unwrap();
-    (*address, storage_key.into())
+    (*address, U256::from_big_endian(&storage_key.to_bytes_be()))
 }
 
 /// Configure initial storage state for FRAME modules.
@@ -216,35 +216,35 @@ fn testnet_genesis(
         get_contract_class(include_bytes!("../../../resources/erc20/erc20.json")).try_into().unwrap();
 
     // ACCOUNT CONTRACT
-    let contract_address = Felt252Wrapper::from_hex_be(CONTRACT_ADDRESS).unwrap();
+    let contract_address = U256::from_str_radix(CONTRACT_ADDRESS, 16).unwrap();
 
-    let class_hash = Felt252Wrapper::from_hex_be(CLASS_HASH).unwrap();
+    let class_hash = U256::from_str_radix(CLASS_HASH, 16).unwrap();
 
     // ARGENT ACCOUNT CONTRACT
-    let argent_account_address = Felt252Wrapper::from_hex_be(ARGENT_ACCOUNT_ADDRESS).unwrap();
+    let argent_account_address = U256::from_str_radix(ARGENT_ACCOUNT_ADDRESS, 16).unwrap();
 
-    let argent_account_class_hash = Felt252Wrapper::from_hex_be(ARGENT_ACCOUNT_CLASS_HASH).unwrap();
+    let argent_account_class_hash = U256::from_str_radix(ARGENT_ACCOUNT_CLASS_HASH, 16).unwrap();
 
-    let argent_proxy_class_hash = Felt252Wrapper::from_hex_be(ARGENT_PROXY_CLASS_HASH).unwrap();
+    let argent_proxy_class_hash = U256::from_str_radix(ARGENT_PROXY_CLASS_HASH, 16).unwrap();
 
     // TEST CONTRACT
-    let other_contract_address = Felt252Wrapper::from_hex_be(OTHER_CONTRACT_ADDRESS).unwrap();
+    let other_contract_address = U256::from_str_radix(OTHER_CONTRACT_ADDRESS, 16).unwrap();
 
-    let other_class_hash = Felt252Wrapper::from_hex_be(OTHER_CLASS_HASH).unwrap();
+    let other_class_hash = U256::from_str_radix(OTHER_CLASS_HASH, 16).unwrap();
 
     // Fee token
-    let fee_token_address = Felt252Wrapper::from_hex_be(FEE_TOKEN_ADDRESS).unwrap();
+    let fee_token_address = U256::from_str_radix(FEE_TOKEN_ADDRESS, 16).unwrap();
 
-    let fee_token_class_hash = Felt252Wrapper::from_hex_be(FEE_TOKEN_CLASS_HASH).unwrap();
+    let fee_token_class_hash = U256::from_str_radix(FEE_TOKEN_CLASS_HASH, 16).unwrap();
 
     // ERC20 CONTRACT
-    let token_contract_address = Felt252Wrapper::from_hex_be(TOKEN_CONTRACT_ADDRESS).unwrap();
+    let token_contract_address = U256::from_str_radix(TOKEN_CONTRACT_ADDRESS, 16).unwrap();
 
-    let token_class_hash = Felt252Wrapper::from_hex_be(TOKEN_CLASS_HASH).unwrap();
+    let token_class_hash = U256::from_str_radix(TOKEN_CLASS_HASH, 16).unwrap();
 
-    let public_key = Felt252Wrapper::from_hex_be(PUBLIC_KEY).unwrap();
+    let public_key = U256::from_str_radix(PUBLIC_KEY, 16).unwrap();
 
-    let chain_id = Felt252Wrapper(FieldElement::from_byte_slice_be(&CHAIN_ID_STARKNET_TESTNET.to_be_bytes()).unwrap());
+    let chain_id = U256::from_big_endian(&CHAIN_ID_STARKNET_TESTNET.to_be_bytes());
 
     GenesisConfig {
         system: SystemConfig {
@@ -286,33 +286,24 @@ fn testnet_genesis(
                 (fee_token_class_hash, erc20_class),
             ],
             storage: vec![
-                (
-                    get_storage_key(&fee_token_address, "ERC20_balances", &[contract_address], 0),
-                    Felt252Wrapper::from(u128::MAX),
-                ),
-                (
-                    get_storage_key(&fee_token_address, "ERC20_balances", &[contract_address], 1),
-                    Felt252Wrapper::from(u128::MAX),
-                ),
+                (get_storage_key(&fee_token_address, "ERC20_balances", &[contract_address], 0), U256::from(u128::MAX)),
+                (get_storage_key(&fee_token_address, "ERC20_balances", &[contract_address], 1), U256::from(u128::MAX)),
                 (
                     get_storage_key(&fee_token_address, "ERC20_balances", &[argent_account_address], 0),
-                    Felt252Wrapper::from(u128::MAX),
+                    U256::from(u128::MAX),
                 ),
                 (
                     get_storage_key(&token_contract_address, "ERC20_balances", &[contract_address], 0),
-                    Felt252Wrapper::from(u128::MAX),
+                    U256::from(u128::MAX),
                 ),
                 (
                     get_storage_key(&token_contract_address, "ERC20_balances", &[contract_address], 1),
-                    Felt252Wrapper::from(u128::MAX),
+                    U256::from(u128::MAX),
                 ),
-                (
-                    get_storage_key(&fee_token_address, "ERC20_balances", &[public_key], 0),
-                    Felt252Wrapper::from(u128::MAX),
-                ),
+                (get_storage_key(&fee_token_address, "ERC20_balances", &[public_key], 0), U256::from(u128::MAX)),
                 (
                     get_storage_key(&argent_account_address, "_signer", &[], 0),
-                    Felt252Wrapper::from_hex_be(ACCOUNT_PUBLIC_KEY).unwrap(),
+                    U256::from_str_radix(ACCOUNT_PUBLIC_KEY, 16).unwrap(),
                 ),
             ],
             fee_token_address,

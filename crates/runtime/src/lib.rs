@@ -16,7 +16,6 @@ pub mod opaque;
 mod pallets;
 mod runtime_tests;
 mod types;
-
 pub use config::*;
 pub use frame_support::traits::{ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo};
 pub use frame_support::weights::constants::{
@@ -28,7 +27,7 @@ pub use frame_system::Call as SystemCall;
 use frame_system::EventRecord;
 use mp_starknet::crypto::hash::Hasher;
 use mp_starknet::execution::types::{
-    ClassHashWrapper, ContractAddressWrapper, ContractClassWrapper, Felt252Wrapper, StorageKeyWrapper,
+    ClassHashWrapper, ContractAddressWrapper, ContractClassWrapper, StorageKeyWrapper,
 };
 use mp_starknet::transaction::types::{
     DeclareTransaction, DeployAccountTransaction, EventWrapper, InvokeTransaction, Transaction, TxType,
@@ -44,7 +43,7 @@ pub use pallet_timestamp::Call as TimestampCall;
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::crypto::KeyTypeId;
-use sp_core::OpaqueMetadata;
+use sp_core::{OpaqueMetadata, U256};
 use sp_runtime::traits::{BlakeTwo256, Block as BlockT, NumberFor};
 use sp_runtime::transaction_validity::{TransactionSource, TransactionValidity};
 #[cfg(any(feature = "std", test))]
@@ -286,7 +285,7 @@ impl_runtime_apis! {
     }
 
     impl pallet_starknet::runtime_api::StarknetRuntimeApi<Block> for Runtime {
-        fn current_block_hash() -> Felt252Wrapper {
+        fn current_block_hash() -> U256 {
             Starknet::current_block_hash()
         }
 
@@ -294,11 +293,11 @@ impl_runtime_apis! {
             Starknet::current_block()
         }
 
-        fn get_storage_at(address: ContractAddressWrapper, key: StorageKeyWrapper) -> Result<Felt252Wrapper, DispatchError> {
+        fn get_storage_at(address: ContractAddressWrapper, key: StorageKeyWrapper) -> Result<U256, DispatchError> {
             Starknet::get_storage_at(address, key)
         }
 
-        fn call(address: ContractAddressWrapper, function_selector: Felt252Wrapper, calldata: Vec<Felt252Wrapper>) -> Result<Vec<Felt252Wrapper>, DispatchError> {
+        fn call(address: ContractAddressWrapper, function_selector: U256, calldata: Vec<U256>) -> Result<Vec<U256>, DispatchError> {
             Starknet::call_contract(address, function_selector, calldata)
         }
 
@@ -326,7 +325,7 @@ impl_runtime_apis! {
             Starknet::contract_class_by_class_hash(class_hash)
         }
 
-        fn chain_id() -> Felt252Wrapper {
+        fn chain_id() -> U256 {
             Starknet::chain_id()
         }
 

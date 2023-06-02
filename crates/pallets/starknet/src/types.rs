@@ -1,6 +1,6 @@
 //! Starknet pallet custom types.
 use blockifier::execution::contract_class::ContractClass;
-use mp_starknet::execution::types::{ContractAddressWrapper, Felt252Wrapper};
+use mp_starknet::execution::types::ContractAddressWrapper;
 use sp_core::{ConstU32, U256};
 use starknet_api::api_core::ClassHash;
 use starknet_api::stdlib::collections::HashMap;
@@ -8,7 +8,7 @@ use starknet_api::stdlib::collections::HashMap;
 /// Nonce of a Starknet transaction.
 pub type NonceWrapper = U256;
 /// Storage Key
-pub type StorageKeyWrapper = Felt252Wrapper;
+pub type StorageKeyWrapper = U256;
 /// Contract Storage Key
 pub type ContractStorageKeyWrapper = (ContractAddressWrapper, StorageKeyWrapper);
 
@@ -31,7 +31,7 @@ pub type ContractClassMapping = HashMap<ClassHash, ContractClass>;
 #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
 pub struct DeployAccountTransactionOutput {
     /// Transaction hash
-    pub transaction_hash: Felt252Wrapper,
+    pub transaction_hash: U256,
     /// Contract Address
     pub contract_address: ContractAddressWrapper,
 }

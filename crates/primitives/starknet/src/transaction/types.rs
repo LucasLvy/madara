@@ -29,9 +29,7 @@ use crate::crypto::commitment::{
 };
 use crate::execution::call_entrypoint_wrapper::MaxCalldataSize;
 use crate::execution::entrypoint_wrapper::EntryPointTypeWrapper;
-use crate::execution::types::{
-    CallEntryPointWrapper, ContractAddressWrapper, ContractClassWrapper, Felt252Wrapper, Felt252WrapperError,
-};
+use crate::execution::types::{CallEntryPointWrapper, ContractAddressWrapper, ContractClassWrapper};
 
 /// Max size of arrays.
 /// TODO: add real value (#250)
@@ -172,15 +170,15 @@ pub struct DeclareTransaction {
     /// Transaction sender address.
     pub sender_address: ContractAddressWrapper,
     /// Class hash to declare.
-    pub compiled_class_hash: Felt252Wrapper,
+    pub compiled_class_hash: U256,
     /// Contract to declare.
     pub contract_class: ContractClassWrapper,
     /// Account contract nonce.
-    pub nonce: Felt252Wrapper,
+    pub nonce: U256,
     /// Transaction signature.
-    pub signature: BoundedVec<Felt252Wrapper, MaxArraySize>,
+    pub signature: BoundedVec<U256, MaxArraySize>,
     /// Max fee.
-    pub max_fee: Felt252Wrapper,
+    pub max_fee: U256,
 }
 
 impl DeclareTransaction {
@@ -227,17 +225,17 @@ pub struct DeployAccountTransaction {
     /// Transaction sender address.
     pub sender_address: ContractAddressWrapper,
     /// Transaction calldata.
-    pub calldata: BoundedVec<Felt252Wrapper, MaxCalldataSize>,
+    pub calldata: BoundedVec<U256, MaxCalldataSize>,
     /// Account contract nonce.
-    pub nonce: Felt252Wrapper,
+    pub nonce: U256,
     /// Transaction salt.
     pub salt: U256,
     /// Transaction signature.
-    pub signature: BoundedVec<Felt252Wrapper, MaxArraySize>,
+    pub signature: BoundedVec<U256, MaxArraySize>,
     /// Account class hash.
-    pub account_class_hash: Felt252Wrapper,
+    pub account_class_hash: U256,
     /// Max fee.
-    pub max_fee: Felt252Wrapper,
+    pub max_fee: U256,
 }
 
 impl DeployAccountTransaction {
@@ -313,13 +311,13 @@ pub struct InvokeTransaction {
     /// Transaction sender address.
     pub sender_address: ContractAddressWrapper,
     /// Transaction calldata.
-    pub calldata: BoundedVec<Felt252Wrapper, MaxCalldataSize>,
+    pub calldata: BoundedVec<U256, MaxCalldataSize>,
     /// Account contract nonce.
-    pub nonce: Felt252Wrapper,
+    pub nonce: U256,
     /// Transaction signature.
-    pub signature: BoundedVec<Felt252Wrapper, MaxArraySize>,
+    pub signature: BoundedVec<U256, MaxArraySize>,
     /// Max fee.
-    pub max_fee: Felt252Wrapper,
+    pub max_fee: U256,
 }
 
 impl From<Transaction> for InvokeTransaction {
@@ -378,13 +376,13 @@ pub struct Transaction {
     /// The version of the transaction.
     pub version: u8,
     /// Transaction hash.
-    pub hash: Felt252Wrapper,
+    pub hash: U256,
     /// Signature.
-    pub signature: BoundedVec<Felt252Wrapper, MaxArraySize>,
+    pub signature: BoundedVec<U256, MaxArraySize>,
     /// Sender Address
     pub sender_address: ContractAddressWrapper,
     /// Nonce
-    pub nonce: Felt252Wrapper,
+    pub nonce: U256,
     /// Call entrypoint
     pub call_entrypoint: CallEntryPointWrapper,
     /// Contract Class
@@ -392,7 +390,7 @@ pub struct Transaction {
     /// Contract Address Salt
     pub contract_address_salt: Option<U256>,
     /// Max fee.
-    pub max_fee: Felt252Wrapper,
+    pub max_fee: U256,
 }
 
 impl TryFrom<Transaction> for DeployAccountTransaction {
@@ -439,36 +437,26 @@ pub enum RPCTransactionConversionError {
 }
 
 #[cfg(feature = "std")]
-impl From<Felt252WrapperError> for RPCTransactionConversionError {
-    fn from(value: Felt252WrapperError) -> Self {
-        match value {
-            Felt252WrapperError::FromArrayError => Self::FromArrayError,
-            Felt252WrapperError::InvalidLength => Self::InvalidLength,
-            Felt252WrapperError::InvalidCharacter => Self::InvalidCharacter,
-            Felt252WrapperError::OutOfRange => Self::OutOfRange,
-            Felt252WrapperError::ValueTooLarge => Self::ValueTooLarge,
-        }
-    }
-}
-
-#[cfg(feature = "std")]
 impl TryFrom<Transaction> for RPCTransaction {
     type Error = RPCTransactionConversionError;
     fn try_from(value: Transaction) -> Result<Self, Self::Error> {
-        let transaction_hash = value.hash.0;
-        let max_fee = value.max_fee.0;
-        let signature = value.signature.iter().map(|&f| f.0).collect();
-        let nonce = value.nonce.0;
-        let sender_address = value.sender_address.0;
+        let transaction_hash = FieldElement::from_bytes_be(&value.hash.into()).unwrap();
+        let max_fee = FieldElement::from_bytes_be(&value.max_fee.into()).unwrap();
+        let signature = value.signature.iter().map(|&f| FieldElement::from_bytes_be(&f.into()).unwrap()).collect();
+        let nonce = FieldElement::from_bytes_be(&value.nonce.into()).unwrap();
+        let sender_address = FieldElement::from_bytes_be(&value.sender_address.into()).unwrap();
         let class_hash = value.call_entrypoint.class_hash.ok_or(RPCTransactionConversionError::MissingInformation);
-        let contract_address = value.call_entrypoint.storage_address.0;
-        let entry_point_selector =
-            value.call_entrypoint.entrypoint_selector.ok_or(RPCTransactionConversionError::MissingInformation);
-        let calldata = value.call_entrypoint.calldata.iter().map(|&f| f.0).collect();
+        let contract_address = FieldElement::from_bytes_be(&value.call_entrypoint.storage_address.into()).unwrap();
+        let entry_point_selector = FieldElement::from_bytes_be(
+            &value.call_entrypoint.entrypoint_selector.ok_or(RPCTransactionConversionError::MissingInformation)?.into(),
+        )
+        .unwrap();
+        let calldata =
+            value.call_entrypoint.calldata.iter().map(|&f| FieldElement::from_bytes_be(&f.into()).unwrap()).collect();
 
         match value.tx_type {
             TxType::Declare => {
-                let class_hash = class_hash?.0;
+                let class_hash = FieldElement::from_byte_slice_be(&Into::<[u8; 32]>::into(class_hash?)).unwrap();
                 match value.version {
                     1 => Ok(RPCTransaction::Declare(RPCDeclareTransaction::V1(RPCDeclareTransactionV1 {
                         transaction_hash,
@@ -497,7 +485,7 @@ impl TryFrom<Transaction> for RPCTransaction {
                     signature,
                     nonce,
                     contract_address,
-                    entry_point_selector: entry_point_selector?.0,
+                    entry_point_selector,
                     calldata,
                 }))),
                 1 => Ok(RPCTransaction::Invoke(RPCInvokeTransaction::V1(RPCInvokeTransactionV1 {
@@ -510,18 +498,23 @@ impl TryFrom<Transaction> for RPCTransaction {
                 }))),
                 _ => Err(RPCTransactionConversionError::UnknownVersion),
             },
-            TxType::DeployAccount => Ok(RPCTransaction::DeployAccount(RPCDeployAccountTransaction {
-                transaction_hash,
-                max_fee,
-                signature,
-                nonce,
-                contract_address_salt: Felt252Wrapper::try_from(
-                    value.contract_address_salt.ok_or(RPCTransactionConversionError::MissingInformation)?,
-                )?
-                .0,
-                constructor_calldata: calldata,
-                class_hash: class_hash?.0,
-            })),
+            TxType::DeployAccount => {
+                let class_hash = FieldElement::from_byte_slice_be(&Into::<[u8; 32]>::into(class_hash?)).unwrap();
+
+                Ok(RPCTransaction::DeployAccount(RPCDeployAccountTransaction {
+                    transaction_hash,
+                    max_fee,
+                    signature,
+                    nonce,
+                    contract_address_salt: FieldElement::from_byte_slice_be(&Into::<[u8; 32]>::into(
+                        value.contract_address_salt.ok_or(RPCTransactionConversionError::MissingInformation)?,
+                    ))
+                    .unwrap(),
+
+                    constructor_calldata: calldata,
+                    class_hash,
+                }))
+            }
             TxType::L1Handler => {
                 let nonce = TryInto::try_into(value.nonce).unwrap(); // this panics in case of overflow
                 Ok(RPCTransaction::L1Handler(RPCL1HandlerTransaction {
@@ -529,7 +522,7 @@ impl TryFrom<Transaction> for RPCTransaction {
                     version: value.version.into(),
                     nonce,
                     contract_address,
-                    entry_point_selector: entry_point_selector?.0,
+                    entry_point_selector,
                     calldata,
                 }))
             }
@@ -551,15 +544,15 @@ impl TryFrom<Transaction> for RPCTransaction {
 #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
 pub struct TransactionReceiptWrapper {
     /// Transaction hash.
-    pub transaction_hash: Felt252Wrapper,
+    pub transaction_hash: U256,
     /// Fee paid for the transaction.
-    pub actual_fee: Felt252Wrapper,
+    pub actual_fee: U256,
     /// Transaction type
     pub tx_type: TxType,
     /// Block Number
     pub block_number: u64,
     /// Block Hash
-    pub block_hash: Felt252Wrapper,
+    pub block_hash: U256,
     /// Messages sent in the transaction.
     // pub messages_sent: BoundedVec<Message, MaxArraySize>, // TODO: add messages
     /// Events emitted in the transaction.
@@ -580,10 +573,10 @@ impl TransactionReceiptWrapper {
         self,
         status: RPCTransactionStatus,
     ) -> RPCMaybePendingTransactionReceipt {
-        let transaction_hash = self.transaction_hash.into();
-        let actual_fee = self.actual_fee.into();
+        let transaction_hash = FieldElement::from_bytes_be(&self.transaction_hash.into()).unwrap();
+        let actual_fee = FieldElement::from_bytes_be(&self.actual_fee.into()).unwrap();
         let status = status;
-        let block_hash = self.block_hash.into();
+        let block_hash = FieldElement::from_bytes_be(&self.block_hash.into()).unwrap();
         let block_number = self.block_number;
         let events = self.events.iter().map(|e| (*e).clone().into()).collect();
 
@@ -657,22 +650,22 @@ impl TransactionReceiptWrapper {
 #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
 pub struct EventWrapper {
     /// The keys (topics) of the event.
-    pub keys: BoundedVec<Felt252Wrapper, MaxArraySize>,
+    pub keys: BoundedVec<U256, MaxArraySize>,
     /// The data of the event.
-    pub data: BoundedVec<Felt252Wrapper, MaxArraySize>,
+    pub data: BoundedVec<U256, MaxArraySize>,
     /// The address that emitted the event
     pub from_address: ContractAddressWrapper,
     /// The hash of the transaction that emitted the event
-    pub transaction_hash: Felt252Wrapper,
+    pub transaction_hash: U256,
 }
 
 #[cfg(feature = "std")]
 impl From<EventWrapper> for RPCEvent {
     fn from(value: EventWrapper) -> Self {
         Self {
-            from_address: value.from_address.into(),
-            keys: value.keys.iter().map(|k| (*k).into()).collect(),
-            data: value.data.iter().map(|d| (*d).into()).collect(),
+            from_address: FieldElement::from_bytes_be(&value.from_address.into()).unwrap(),
+            keys: value.keys.iter().map(|&k| FieldElement::from_bytes_be(&k.into()).unwrap()).collect(),
+            data: value.data.iter().map(|&d| FieldElement::from_bytes_be(&d.into()).unwrap()).collect(),
         }
     }
 }

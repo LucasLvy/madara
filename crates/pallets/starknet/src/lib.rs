@@ -61,7 +61,7 @@ pub use pallet::*;
 
 #[macro_use]
 pub extern crate alloc;
-use alloc::str::from_utf8_unchecked;
+
 use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
@@ -76,7 +76,6 @@ use mp_starknet::block::{Block as StarknetBlock, BlockTransactions, Header as St
 use mp_starknet::crypto::commitment;
 use mp_starknet::execution::types::{
     CallEntryPointWrapper, ClassHashWrapper, ContractAddressWrapper, ContractClassWrapper, EntryPointTypeWrapper,
-    Felt252Wrapper,
 };
 use mp_starknet::storage::{StarknetStorageSchemaVersion, PALLET_STARKNET_SCHEMA};
 use mp_starknet::traits::hash::{CryptoHasherT, DefaultHasher, HasherT};
@@ -88,9 +87,9 @@ use sp_core::U256;
 use sp_runtime::traits::UniqueSaturatedInto;
 use sp_runtime::DigestItem;
 use starknet_api::api_core::{ChainId, ContractAddress};
+use starknet_api::hash::StarkFelt;
 use starknet_api::transaction::{EventContent, TransactionHash};
 
-use crate::alloc::string::ToString;
 use crate::types::{ContractStorageKeyWrapper, NonceWrapper, StorageKeyWrapper};
 
 pub(crate) const LOG_TARGET: &str = "runtime::starknet";
@@ -132,7 +131,7 @@ pub mod pallet {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
         /// How Starknet state root is calculated.
-        type StateRoot: Get<Felt252Wrapper>;
+        type StateRoot: Get<U256>;
         /// The hashing function to use.
         type SystemHash: HasherT + DefaultHasher + CryptoHasherT;
         /// The time idk what.
@@ -211,7 +210,7 @@ pub mod pallet {
     /// Safe to use `Identity` as the key is already a hash.
     #[pallet::storage]
     #[pallet::getter(fn block_hash)]
-    pub(super) type BlockHash<T: Config> = StorageMap<_, Identity, U256, Felt252Wrapper, ValueQuery>;
+    pub(super) type BlockHash<T: Config> = StorageMap<_, Identity, U256, U256, ValueQuery>;
 
     /// Mapping from Starknet contract address to the contract's class hash.
     /// Safe to use `Identity` as the key is already a hash.
@@ -237,8 +236,7 @@ pub mod pallet {
     /// Safe to use `Identity` as the key is already a hash.
     #[pallet::storage]
     #[pallet::getter(fn storage)]
-    pub(super) type StorageView<T: Config> =
-        StorageMap<_, Identity, ContractStorageKeyWrapper, Felt252Wrapper, ValueQuery>;
+    pub(super) type StorageView<T: Config> = StorageMap<_, Identity, ContractStorageKeyWrapper, U256, ValueQuery>;
 
     /// The last processed Ethereum block number for L1 messages consumption.
     /// This is used to avoid re-processing the same Ethereum block multiple times.
@@ -257,7 +255,7 @@ pub mod pallet {
     /// The chain id.
     #[pallet::storage]
     #[pallet::getter(fn chain_id)]
-    pub(super) type ChainId<T: Config> = StorageValue<_, Felt252Wrapper, ValueQuery>;
+    pub(super) type ChainId<T: Config> = StorageValue<_, U256, ValueQuery>;
 
     /// Starknet genesis configuration.
     #[pallet::genesis_config]
@@ -274,13 +272,13 @@ pub mod pallet {
         /// Same as `contracts`, this can be used to start the chain with a set of pre-deployed
         /// contracts classes.
         pub contract_classes: Vec<(ClassHashWrapper, ContractClassWrapper)>,
-        pub storage: Vec<(ContractStorageKeyWrapper, Felt252Wrapper)>,
+        pub storage: Vec<(ContractStorageKeyWrapper, U256)>,
         /// The address of the fee token.
         /// Must be set to the address of the fee token ERC20 contract.
         pub fee_token_address: ContractAddressWrapper,
         pub _phantom: PhantomData<T>,
         /// The chain id.
-        pub chain_id: Felt252Wrapper,
+        pub chain_id: U256,
     }
 
     #[cfg(feature = "std")]
@@ -434,7 +432,7 @@ pub mod pallet {
                 }) => {
                     log!(debug, "Transaction executed successfully: {:?}", execute_call_info);
 
-                    let tx_hash = TransactionHash(transaction.hash.into());
+                    let tx_hash = TransactionHash(StarkFelt(transaction.hash.into()));
                     let events = match (execute_call_info, fee_transfer_call_info) {
                         (Some(mut exec), Some(mut fee)) => {
                             let mut events =
@@ -533,7 +531,7 @@ pub mod pallet {
                 }) => {
                     log!(trace, "Transaction executed successfully: {:?}", execute_call_info);
 
-                    let tx_hash = TransactionHash(transaction.hash.into());
+                    let tx_hash = TransactionHash(StarkFelt(transaction.hash.into()));
                     let events = match (execute_call_info, fee_transfer_call_info) {
                         (Some(mut exec), Some(mut fee)) => {
                             let mut events =
@@ -625,7 +623,7 @@ pub mod pallet {
                 }) => {
                     log!(trace, "Transaction executed successfully: {:?}", execute_call_info);
 
-                    let tx_hash = TransactionHash(transaction.hash.into());
+                    let tx_hash = TransactionHash(StarkFelt(transaction.hash.into()));
                     let events = match (execute_call_info, fee_transfer_call_info) {
                         (Some(mut exec), Some(mut fee)) => {
                             let mut events =
@@ -766,12 +764,15 @@ pub mod pallet {
                 Call::invoke { transaction } => {
                     let invoke_transaction = transaction.clone().from_invoke(&Self::chain_id_str());
                     Pallet::<T>::validate_tx(invoke_transaction, TxType::Invoke)?;
-                    ValidTransaction::with_tag_prefix("starknet")
-                        .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
-                        .and_provides((transaction.sender_address, transaction.nonce))
+                    let mut tx = ValidTransaction::with_tag_prefix("starknet")
+                        .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce).unwrap()))
                         .longevity(64_u64)
                         .propagate(true)
-                        .build()
+                        .and_provides(vec![transaction.sender_address, transaction.nonce]);
+                    if transaction.nonce > U256::zero() {
+                        tx = tx.and_requires(vec![transaction.sender_address, transaction.nonce - U256::one()])
+                    }
+                    tx.build()
                 }
                 Call::declare { transaction } => {
                     let declare_transaction = transaction.clone().from_declare(&Self::chain_id_str());
@@ -839,14 +840,14 @@ impl<T: Config> Pallet<T> {
     ///
     /// The current block hash.
     #[inline(always)]
-    pub fn current_block_hash() -> Felt252Wrapper {
+    pub fn current_block_hash() -> U256 {
         Self::current_block().header().hash(T::SystemHash::hasher())
     }
 
     /// convert chain_id
     #[inline(always)]
     pub fn chain_id_str() -> String {
-        unsafe { from_utf8_unchecked(&Self::chain_id().0.to_bytes_be()).to_string() }
+        format!("{:x}", Self::chain_id())
     }
 
     /// Get the block hash of the previous block.
@@ -859,12 +860,8 @@ impl<T: Config> Pallet<T> {
     ///
     /// The block hash of the parent (previous) block or 0 if the current block is 0.
     #[inline(always)]
-    pub fn parent_block_hash(current_block_number: &U256) -> Felt252Wrapper {
-        if current_block_number == &U256::zero() {
-            Felt252Wrapper::ZERO
-        } else {
-            Self::block_hash(current_block_number - 1)
-        }
+    pub fn parent_block_hash(current_block_number: &U256) -> U256 {
+        if current_block_number == &U256::zero() { U256::zero() } else { Self::block_hash(current_block_number - 1) }
     }
 
     /// Get the current block timestamp.
@@ -892,9 +889,9 @@ impl<T: Config> Pallet<T> {
     /// Call a smart contract function.
     pub fn call_contract(
         address: ContractAddressWrapper,
-        function_selector: Felt252Wrapper,
-        calldata: Vec<Felt252Wrapper>,
-    ) -> Result<Vec<Felt252Wrapper>, DispatchError> {
+        function_selector: U256,
+        calldata: Vec<U256>,
+    ) -> Result<Vec<U256>, DispatchError> {
         // Get current block
         let block = Self::current_block();
         // Get fee token address
@@ -921,7 +918,7 @@ impl<T: Config> Pallet<T> {
         ) {
             Ok(v) => {
                 log!(debug, "Transaction executed successfully: {:?}", v);
-                let result = v.execution.retdata.0.iter().map(|x| (*x).into()).collect();
+                let result = v.execution.retdata.0.iter().map(|&x| U256::from_big_endian(&x.0)).collect();
                 Ok(result)
             }
             Err(e) => {
@@ -935,7 +932,7 @@ impl<T: Config> Pallet<T> {
     pub fn get_storage_at(
         contract_address: ContractAddressWrapper,
         key: StorageKeyWrapper,
-    ) -> Result<Felt252Wrapper, DispatchError> {
+    ) -> Result<U256, DispatchError> {
         // Get state
         ensure!(ContractClassHashes::<T>::contains_key(contract_address), Error::<T>::ContractNotFound);
         Ok(Self::storage((contract_address, key)))
@@ -951,7 +948,7 @@ impl<T: Config> Pallet<T> {
         let parent_block_hash = Self::parent_block_hash(&block_number);
         let pending = Self::pending();
 
-        let global_state_root = Felt252Wrapper::ZERO;
+        let global_state_root = U256::zero();
         // TODO: use the real sequencer address (our own address)
         // FIXME #243
         let sequencer_address = SEQUENCER_ADDRESS;
@@ -978,12 +975,12 @@ impl<T: Config> Pallet<T> {
                 parent_block_hash,
                 block_number,
                 global_state_root,
-                Felt252Wrapper::try_from(&sequencer_address).unwrap(),
+                U256::try_from(&sequencer_address).unwrap(),
                 block_timestamp,
                 transaction_count,
-                transaction_commitment.try_into().unwrap(),
+                transaction_commitment,
                 events.len() as u128,
-                event_commitment.try_into().unwrap(),
+                event_commitment,
                 protocol_version,
                 extra_data,
             ),

@@ -6,9 +6,7 @@ use base64::engine::general_purpose;
 use base64::Engine;
 use cairo_vm::types::program::Program;
 use flate2::read::GzDecoder;
-use mp_starknet::execution::types::{
-    ContractClassWrapper, EntryPointTypeWrapper, EntryPointWrapper, Felt252Wrapper, MaxEntryPoints,
-};
+use mp_starknet::execution::types::{ContractClassWrapper, EntryPointTypeWrapper, EntryPointWrapper, MaxEntryPoints};
 use mp_starknet::transaction::types::{DeclareTransaction, DeployAccountTransaction, InvokeTransaction, Transaction};
 use sp_core::U256;
 use sp_runtime::{BoundedBTreeMap, BoundedVec};
@@ -68,17 +66,17 @@ pub fn to_invoke_tx(tx: BroadcastedInvokeTransaction) -> Result<InvokeTransactio
         BroadcastedInvokeTransaction::V1(invoke_tx_v1) => Ok(InvokeTransaction {
             version: 1_u8,
             signature: BoundedVec::try_from(
-                invoke_tx_v1.signature.iter().map(|x| (*x).into()).collect::<Vec<Felt252Wrapper>>(),
+                invoke_tx_v1.signature.iter().map(|x| U256::from_big_endian(&x.to_bytes_be())).collect::<Vec<U256>>(),
             )
             .map_err(|e| anyhow!("failed to convert signature: {:?}", e))?,
 
-            sender_address: invoke_tx_v1.sender_address.into(),
-            nonce: Felt252Wrapper::from(invoke_tx_v1.nonce),
+            sender_address: U256::from_big_endian(&invoke_tx_v1.sender_address.to_bytes_be()),
+            nonce: U256::from_big_endian(&invoke_tx_v1.nonce.to_bytes_be()),
             calldata: BoundedVec::try_from(
-                invoke_tx_v1.calldata.iter().map(|x| (*x).into()).collect::<Vec<Felt252Wrapper>>(),
+                invoke_tx_v1.calldata.iter().map(|x| U256::from_big_endian(&x.to_bytes_be())).collect::<Vec<U256>>(),
             )
             .map_err(|e| anyhow!("failed to convert calldata: {:?}", e))?,
-            max_fee: Felt252Wrapper::from(invoke_tx_v1.max_fee),
+            max_fee: U256::from_big_endian(&invoke_tx_v1.max_fee.to_bytes_be()),
         }),
     }
 }
@@ -94,32 +92,34 @@ pub fn to_deploy_account_tx(tx: BroadcastedDeployAccountTransaction) -> Result<D
     let signature = tx
         .signature
         .iter()
-        .map(|f| (*f).into())
-        .collect::<Vec<Felt252Wrapper>>()
+        .map(|f| U256::from_big_endian(&f.to_bytes_be()))
+        .collect::<Vec<U256>>()
         .try_into()
         .map_err(|_| anyhow!("failed to bound signatures Vec<H256> by MaxArraySize"))?;
 
-    let sender_address = calculate_contract_address(
-        ContractAddressSalt(StarkFelt(contract_address_salt)),
-        ClassHash(StarkFelt(account_class_hash.to_bytes_be())),
-        &Calldata(calldata.into()),
-        StarknetContractAddress::default(),
-    )
-    .map_err(|e| anyhow!("Failed to calculate contract address: {e}"))?
-    .0
-    .0
-    .into();
+    let sender_address = U256::from_big_endian(
+        &calculate_contract_address(
+            ContractAddressSalt(StarkFelt(contract_address_salt)),
+            ClassHash(StarkFelt(account_class_hash.to_bytes_be())),
+            &Calldata(calldata.into()),
+            StarknetContractAddress::default(),
+        )
+        .map_err(|e| anyhow!("Failed to calculate contract address: {e}"))?
+        .0
+        .0
+        .0,
+    );
 
     let calldata = tx
         .constructor_calldata
         .iter()
-        .map(|f| (*f).into())
-        .collect::<Vec<Felt252Wrapper>>()
+        .map(|f| U256::from_big_endian(&f.to_bytes_be()))
+        .collect::<Vec<U256>>()
         .try_into()
         .map_err(|_| anyhow!("failed to bound calldata Vec<U256> by MaxArraySize"))?;
 
-    let nonce = Felt252Wrapper::from(tx.nonce);
-    let max_fee = Felt252Wrapper::from(tx.max_fee);
+    let nonce = U256::from_big_endian(&tx.nonce.to_bytes_be());
+    let max_fee = U256::from_big_endian(&tx.max_fee.to_bytes_be());
 
     Ok(DeployAccountTransaction {
         version: 1_u8,
@@ -127,7 +127,7 @@ pub fn to_deploy_account_tx(tx: BroadcastedDeployAccountTransaction) -> Result<D
         calldata,
         salt: U256::from(contract_address_salt),
         signature,
-        account_class_hash: account_class_hash.into(),
+        account_class_hash: U256::from_big_endian(&account_class_hash.to_bytes_be()),
         nonce,
         max_fee,
     })
@@ -139,8 +139,8 @@ pub fn to_declare_tx(tx: BroadcastedDeclareTransaction) -> Result<DeclareTransac
             let signature = declare_tx_v1
                 .signature
                 .iter()
-                .map(|f| (*f).into())
-                .collect::<Vec<Felt252Wrapper>>()
+                .map(|f| U256::from_big_endian(&f.to_bytes_be()))
+                .collect::<Vec<U256>>()
                 .try_into()
                 .map_err(|_| anyhow!("failed to bound signatures Vec<H256> by MaxArraySize"))?;
 
@@ -158,9 +158,9 @@ pub fn to_declare_tx(tx: BroadcastedDeclareTransaction) -> Result<DeclareTransac
 
             Ok(DeclareTransaction {
                 version: 1_u8,
-                sender_address: declare_tx_v1.sender_address.into(),
-                nonce: Felt252Wrapper::from(declare_tx_v1.nonce),
-                max_fee: Felt252Wrapper::from(declare_tx_v1.max_fee),
+                sender_address: U256::from_big_endian(&declare_tx_v1.sender_address.to_bytes_be()),
+                nonce: U256::from_big_endian(&declare_tx_v1.nonce.to_bytes_be()),
+                max_fee: U256::from_big_endian(&declare_tx_v1.max_fee.to_bytes_be()),
                 signature,
                 contract_class: ContractClassWrapper {
                     program: program.try_into().map_err(|_| anyhow!("Failed to convert program to program wrapper"))?,
@@ -169,7 +169,7 @@ pub fn to_declare_tx(tx: BroadcastedDeclareTransaction) -> Result<DeclareTransac
                     ))
                     .unwrap(),
                 },
-                compiled_class_hash: Felt252Wrapper::ZERO, // TODO: compute class hash
+                compiled_class_hash: U256::zero(), // TODO: compute class hash
             })
         }
         BroadcastedDeclareTransaction::V2(_) => Err(StarknetError::FailedToReceiveTransaction.into()),

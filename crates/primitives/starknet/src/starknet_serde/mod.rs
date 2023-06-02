@@ -5,14 +5,12 @@ use alloc::vec::Vec;
 
 use blockifier::execution::contract_class::ContractClass;
 use frame_support::BoundedVec;
+use hex::FromHex;
 use serde::{Deserialize, Serialize};
 use sp_core::U256;
 use thiserror_no_std::Error;
 
-use crate::execution::types::{
-    CallEntryPointWrapper, ContractClassWrapper, EntryPointTypeWrapper, Felt252Wrapper, Felt252WrapperError,
-    MaxCalldataSize,
-};
+use crate::execution::types::{CallEntryPointWrapper, ContractClassWrapper, EntryPointTypeWrapper, MaxCalldataSize};
 use crate::transaction::types::{EventWrapper, MaxArraySize, Transaction};
 
 /// Removes the "0x" prefix from a given hexadecimal string
@@ -20,12 +18,9 @@ fn remove_prefix(input: &str) -> &str {
     input.strip_prefix("0x").unwrap_or(input)
 }
 
-/// Converts a hexadecimal string to an Felt252Wrapper value
-fn string_to_felt(hex_str: &str) -> Result<Felt252Wrapper, String> {
-    match Felt252Wrapper::from_hex_be(hex_str) {
-        Ok(f) => Ok(f),
-        Err(e) => Err(e.to_string()),
-    }
+/// Converts a hexadecimal string to an U256 value
+fn string_to_felt(hex_str: &str) -> Result<U256, String> {
+    Ok(U256::from_big_endian(&<[u8; 32]>::from_hex(hex_str).map_err(|e| e.to_string())?))
 }
 
 // Deserialization and Conversion for JSON Transactions, Events, and CallEntryPoints
@@ -52,7 +47,7 @@ pub struct DeserializeCallEntrypoint {
 pub enum DeserializeCallEntrypointError {
     /// InvalidClassHash error
     #[error("Invalid class hash format: {0}")]
-    InvalidClassHash(Felt252WrapperError),
+    InvalidClassHash(String),
     /// InvalidCalldata error
     #[error("Invalid calldata format: {0}")]
     InvalidCalldata(String),
@@ -67,10 +62,10 @@ pub enum DeserializeCallEntrypointError {
     CalldataExceedsMaxSize,
     /// InvalidStorageAddress error
     #[error("Invalid storage_address format: {0:?}")]
-    InvalidStorageAddress(Felt252WrapperError),
+    InvalidStorageAddress(String),
     /// InvalidCallerAddress error
     #[error("Invalid caller_address format: {0:?}")]
-    InvalidCallerAddress(Felt252WrapperError),
+    InvalidCallerAddress(String),
 }
 
 /// Struct for deserializing Event from JSON
@@ -90,20 +85,20 @@ pub struct DeserializeEventWrapper {
 #[derive(Debug, Error)]
 pub enum DeserializeEventError {
     /// InvalidKeys error
-    #[error("Invalid keys format: {0}")]
-    InvalidKeys(String),
+    #[error("Invalid keys format:")]
+    InvalidKeys,
     /// KeysExceedMaxSize error
     #[error("Keys exceed max size")]
     KeysExceedMaxSize,
     /// InvalidData error
-    #[error("Invalid data format: {0}")]
-    InvalidData(String),
+    #[error("Invalid data format:")]
+    InvalidData,
     /// DataExceedMaxSize error
     #[error("Data exceed max size")]
     DataExceedMaxSize,
     /// InvalidFelt252 error
-    #[error(transparent)]
-    InvalidFelt252(#[from] Felt252WrapperError),
+    #[error("Invalid felt")]
+    InvalidFelt252,
 }
 
 /// Struct for deserializing Transaction from JSON
@@ -168,16 +163,16 @@ impl TryFrom<DeserializeTransaction> for Transaction {
         // Convert version to u8
         let version = d.version;
 
-        // Convert hash to Felt252Wrapper
+        // Convert hash to U256
         let hash = string_to_felt(&d.hash).map_err(DeserializeTransactionError::InvalidHash)?;
 
-        // Convert signatures to BoundedVec<Felt252Wrapper, MaxArraySize> and check if it exceeds max size
+        // Convert signatures to BoundedVec<U256, MaxArraySize> and check if it exceeds max size
         let signature = d
             .signature
             .into_iter()
             .map(|s| string_to_felt(&s).map_err(DeserializeTransactionError::InvalidSignature))
-            .collect::<Result<Vec<Felt252Wrapper>, DeserializeTransactionError>>()?;
-        let signature = BoundedVec::<Felt252Wrapper, MaxArraySize>::try_from(signature)
+            .collect::<Result<Vec<U256>, DeserializeTransactionError>>()?;
+        let signature = BoundedVec::<U256, MaxArraySize>::try_from(signature)
             .map_err(|_| DeserializeTransactionError::SignatureExceedsMaxSize)?;
 
         // Convert sender_address to ContractAddressWrapper
@@ -185,7 +180,7 @@ impl TryFrom<DeserializeTransaction> for Transaction {
             .map_err(DeserializeTransactionError::InvalidSenderAddress)?;
 
         // Convert nonce to U256
-        let nonce = Felt252Wrapper::try_from(U256::from(d.nonce)).unwrap();
+        let nonce = U256::from(d.nonce);
 
         // Convert call_entrypoint to CallEntryPointWrapper
         let call_entrypoint = CallEntryPointWrapper::try_from(d.call_entrypoint)
@@ -208,11 +203,11 @@ impl TryFrom<DeserializeCallEntrypoint> for CallEntryPointWrapper {
     /// Returns a `DeserializeCallEntrypointError` variant if any field fails validation or
     /// conversion.
     fn try_from(d: DeserializeCallEntrypoint) -> Result<Self, Self::Error> {
-        // Convert class_hash to Option<Felt252Wrapper> if present
+        // Convert class_hash to Option<U256> if present
         let class_hash = match d.class_hash {
-            Some(hash_str) => match Felt252Wrapper::from_hex_be(hash_str.as_str()) {
-                Ok(felt) => Some(felt),
-                Err(e) => return Err(DeserializeCallEntrypointError::InvalidClassHash(e)),
+            Some(hash_str) => match &<[u8; 32]>::from_hex(hash_str) {
+                Ok(felt) => Some(U256::from_big_endian(felt)),
+                Err(e) => return Err(DeserializeCallEntrypointError::InvalidClassHash(e.to_string())),
             },
             None => None,
         };
@@ -225,7 +220,7 @@ impl TryFrom<DeserializeCallEntrypoint> for CallEntryPointWrapper {
             _ => return Err(DeserializeCallEntrypointError::InvalidEntryPointType),
         };
 
-        // Convert entrypoint_selector to Option<Felt252Wrapper> if present
+        // Convert entrypoint_selector to Option<U256> if present
         let entrypoint_selector = match d.entrypoint_selector {
             Some(selector) => {
                 Some(string_to_felt(&selector).map_err(DeserializeCallEntrypointError::InvalidEntrypointSelector)?)
@@ -233,25 +228,25 @@ impl TryFrom<DeserializeCallEntrypoint> for CallEntryPointWrapper {
             None => None,
         };
 
-        // Convert calldata to BoundedVec<Felt252Wrapper, MaxArraySize> and check if it exceeds max size
-        let calldata: Result<Vec<Felt252Wrapper>, DeserializeCallEntrypointError> = d
+        // Convert calldata to BoundedVec<U256, MaxArraySize> and check if it exceeds max size
+        let calldata: Result<Vec<U256>, DeserializeCallEntrypointError> = d
             .calldata
             .into_iter()
             .map(|hex_str| string_to_felt(&hex_str).map_err(DeserializeCallEntrypointError::InvalidCalldata))
             .collect();
-        let calldata = BoundedVec::<Felt252Wrapper, MaxCalldataSize>::try_from(calldata?)
+        let calldata = BoundedVec::<U256, MaxCalldataSize>::try_from(calldata?)
             .map_err(|_| DeserializeCallEntrypointError::CalldataExceedsMaxSize)?;
 
-        // Convert storage_address to Felt252Wrapper
-        let storage_address = match Felt252Wrapper::from_hex_be(d.storage_address.as_str()) {
-            Ok(felt) => felt,
-            Err(e) => return Err(DeserializeCallEntrypointError::InvalidStorageAddress(e)),
+        // Convert storage_address to U256
+        let storage_address = match <[u8; 32]>::from_hex(&d.storage_address) {
+            Ok(felt) => U256::from_big_endian(&felt),
+            Err(e) => return Err(DeserializeCallEntrypointError::InvalidStorageAddress(e.to_string())),
         };
 
-        // Convert caller_address to Felt252Wrapper
-        let caller_address = match Felt252Wrapper::from_hex_be(d.caller_address.as_str()) {
-            Ok(felt) => felt,
-            Err(e) => return Err(DeserializeCallEntrypointError::InvalidCallerAddress(e)),
+        // Convert caller_address to U256
+        let caller_address = match <[u8; 32]>::from_hex(&d.caller_address) {
+            Ok(felt) => U256::from_big_endian(&felt),
+            Err(e) => return Err(DeserializeCallEntrypointError::InvalidCallerAddress(e.to_string())),
         };
 
         // Create CallEntryPointWrapper with validated and converted fields
@@ -270,33 +265,33 @@ impl TryFrom<DeserializeEventWrapper> for EventWrapper {
     ///
     /// Returns a `DeserializeEventError` variant if any field fails validation or conversion.
     fn try_from(d: DeserializeEventWrapper) -> Result<Self, Self::Error> {
-        // Convert keys to BoundedVec<Felt252Wrapper, MaxArraySize> and check if it exceeds max size
-        let keys: Result<Vec<Felt252Wrapper>, DeserializeEventError> = d
+        // Convert keys to BoundedVec<U256, MaxArraySize> and check if it exceeds max size
+        let keys: Result<Vec<U256>, DeserializeEventError> = d
             .keys
             .into_iter()
-            .map(|hex_str| string_to_felt(&hex_str).map_err(DeserializeEventError::InvalidKeys))
+            .map(|hex_str| string_to_felt(&hex_str).map_err(|_| DeserializeEventError::InvalidKeys))
             .collect();
-        let keys = BoundedVec::<Felt252Wrapper, MaxArraySize>::try_from(keys?)
-            .map_err(|_| DeserializeEventError::KeysExceedMaxSize)?;
+        let keys =
+            BoundedVec::<U256, MaxArraySize>::try_from(keys?).map_err(|_| DeserializeEventError::KeysExceedMaxSize)?;
 
-        // Convert data to BoundedVec<Felt252Wrapper, MaxArraySize> and check if it exceeds max size
-        let data: Result<Vec<Felt252Wrapper>, DeserializeEventError> = d
+        // Convert data to BoundedVec<U256, MaxArraySize> and check if it exceeds max size
+        let data: Result<Vec<U256>, DeserializeEventError> = d
             .data
             .into_iter()
-            .map(|hex_str| string_to_felt(&hex_str).map_err(DeserializeEventError::InvalidData))
+            .map(|hex_str| string_to_felt(&hex_str).map_err(|_| DeserializeEventError::InvalidData))
             .collect();
-        let data = BoundedVec::<Felt252Wrapper, MaxArraySize>::try_from(data?)
-            .map_err(|_| DeserializeEventError::DataExceedMaxSize)?;
+        let data =
+            BoundedVec::<U256, MaxArraySize>::try_from(data?).map_err(|_| DeserializeEventError::DataExceedMaxSize)?;
 
         // Convert from_address to [u8; 32]
-        let from_address = match Felt252Wrapper::from_hex_be(d.from_address.as_str()) {
-            Ok(felt) => felt,
-            Err(e) => return Err(DeserializeEventError::InvalidFelt252(e)),
+        let from_address = match <[u8; 32]>::from_hex(&d.from_address) {
+            Ok(felt) => U256::from_big_endian(&felt),
+            Err(_e) => return Err(DeserializeEventError::InvalidFelt252),
         };
 
-        let transaction_hash = match Felt252Wrapper::from_hex_be(d.transaction_hash.as_str()) {
-            Ok(felt) => felt,
-            Err(e) => return Err(DeserializeEventError::InvalidFelt252(e)),
+        let transaction_hash = match <[u8; 32]>::from_hex(&d.transaction_hash) {
+            Ok(felt) => U256::from_big_endian(&felt),
+            Err(_e) => return Err(DeserializeEventError::InvalidFelt252),
         };
 
         // Create EventWrapper with validated and converted fields

@@ -1,6 +1,7 @@
 use frame_support::{assert_err, assert_ok, bounded_vec};
-use mp_starknet::execution::types::{ContractClassWrapper, Felt252Wrapper};
+use mp_starknet::execution::types::ContractClassWrapper;
 use mp_starknet::transaction::types::DeclareTransaction;
+use sp_core::U256;
 use sp_runtime::traits::ValidateUnsigned;
 use sp_runtime::transaction_validity::{TransactionSource, TransactionValidityError};
 
@@ -19,15 +20,15 @@ fn given_contract_declare_tx_works_once_not_twice() {
 
         let erc20_class = ContractClassWrapper::try_from(get_contract_class("erc20/erc20.json")).unwrap();
         let erc20_class_hash =
-            Felt252Wrapper::from_hex_be("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95").unwrap();
+            U256::from_str_radix("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95", 16).unwrap();
 
         let transaction = DeclareTransaction {
             sender_address: account_addr,
             version: 1,
             compiled_class_hash: erc20_class_hash,
             contract_class: erc20_class,
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
             signature: bounded_vec!(),
         };
 
@@ -48,19 +49,19 @@ fn given_contract_declare_tx_fails_sender_not_deployed() {
 
         // Wrong address (not deployed)
         let contract_address =
-            Felt252Wrapper::from_hex_be("0x03e437FB56Bb213f5708Fcd6966502070e276c093ec271aA33433b89E21fd31f").unwrap();
+            U256::from_str_radix("0x03e437FB56Bb213f5708Fcd6966502070e276c093ec271aA33433b89E21fd31f", 16).unwrap();
 
         let erc20_class = ContractClassWrapper::try_from(get_contract_class("erc20/erc20.json")).unwrap();
         let erc20_class_hash =
-            Felt252Wrapper::from_hex_be("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95").unwrap();
+            U256::from_str_radix("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95", 16).unwrap();
 
         let transaction = DeclareTransaction {
             sender_address: contract_address,
             contract_class: erc20_class,
             version: 1,
             compiled_class_hash: erc20_class_hash,
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
             signature: bounded_vec!(),
         };
 
@@ -80,7 +81,7 @@ fn given_contract_declare_tx_fails_wrong_tx_version() {
         let erc20_class = ContractClassWrapper::try_from(get_contract_class("erc20/erc20.json")).unwrap();
         // TODO: Delete when the class hash can be derived from ContractClass
         let erc20_class_hash =
-            Felt252Wrapper::from_hex_be("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95").unwrap();
+            U256::from_str_radix("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95", 16).unwrap();
 
         let wrong_tx_version = 50_u8;
 
@@ -89,8 +90,8 @@ fn given_contract_declare_tx_fails_wrong_tx_version() {
             contract_class: erc20_class,
             version: wrong_tx_version,
             compiled_class_hash: erc20_class_hash,
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
             signature: bounded_vec!(),
         };
 
@@ -109,17 +110,17 @@ fn given_contract_declare_on_openzeppelin_account_then_it_works() {
 
         let erc20_class = ContractClassWrapper::try_from(get_contract_class("erc20/erc20.json")).unwrap();
         let erc20_class_hash =
-            Felt252Wrapper::from_hex_be("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95").unwrap();
+            U256::from_str_radix("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95", 16).unwrap();
 
         let tx_hash =
-            Felt252Wrapper::from_hex_be("0x04b6608f43263d19966c6cc30f3619c29e8ced2e07a4947b8c0c2fd56d44d4fb").unwrap();
+            U256::from_str_radix("0x04b6608f43263d19966c6cc30f3619c29e8ced2e07a4947b8c0c2fd56d44d4fb", 16).unwrap();
         let transaction = DeclareTransaction {
             sender_address: account_addr,
             contract_class: erc20_class,
             version: 1,
             compiled_class_hash: erc20_class_hash,
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
             signature: sign_message_hash(tx_hash),
         };
 
@@ -148,16 +149,16 @@ fn given_contract_declare_on_openzeppelin_account_with_incorrect_signature_then_
 
         let erc20_class = ContractClassWrapper::try_from(get_contract_class("erc20/erc20.json")).unwrap();
         let erc20_class_hash =
-            Felt252Wrapper::from_hex_be("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95").unwrap();
+            U256::from_str_radix("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95", 16).unwrap();
 
         let transaction = DeclareTransaction {
             sender_address: account_addr,
             contract_class: erc20_class,
             version: 1,
             compiled_class_hash: erc20_class_hash,
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
-            signature: bounded_vec!(Felt252Wrapper::ZERO, Felt252Wrapper::ONE),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
+            signature: bounded_vec!(U256::zero(), U256::one()),
         };
 
         let validate_result = Starknet::validate_unsigned(
@@ -181,17 +182,17 @@ fn given_contract_declare_on_braavos_account_then_it_works() {
 
         let erc20_class = ContractClassWrapper::try_from(get_contract_class("erc20/erc20.json")).unwrap();
         let erc20_class_hash =
-            Felt252Wrapper::from_hex_be("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95").unwrap();
+            U256::from_str_radix("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95", 16).unwrap();
 
         let tx_hash =
-            Felt252Wrapper::from_hex_be("0x076975b47411feb8dab2633a7b8a2db3d8112a2492d1ccc2bdb832bbc5db0cff").unwrap();
+            U256::from_str_radix("0x076975b47411feb8dab2633a7b8a2db3d8112a2492d1ccc2bdb832bbc5db0cff", 16).unwrap();
         let transaction = DeclareTransaction {
             sender_address: account_addr,
             contract_class: erc20_class,
             version: 1,
             compiled_class_hash: erc20_class_hash,
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
             signature: sign_message_hash(tx_hash),
         };
 
@@ -220,16 +221,16 @@ fn given_contract_declare_on_braavos_account_with_incorrect_signature_then_it_fa
 
         let erc20_class = ContractClassWrapper::try_from(get_contract_class("erc20/erc20.json")).unwrap();
         let erc20_class_hash =
-            Felt252Wrapper::from_hex_be("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95").unwrap();
+            U256::from_str_radix("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95", 16).unwrap();
 
         let transaction = DeclareTransaction {
             sender_address: account_addr,
             contract_class: erc20_class,
             version: 1,
             compiled_class_hash: erc20_class_hash,
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
-            signature: bounded_vec!(Felt252Wrapper::ZERO, Felt252Wrapper::ONE),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
+            signature: bounded_vec!(U256::zero(), U256::one()),
         };
 
         let validate_result = Starknet::validate_unsigned(
@@ -253,17 +254,17 @@ fn given_contract_declare_on_argent_account_then_it_works() {
 
         let erc20_class = ContractClassWrapper::try_from(get_contract_class("erc20/erc20.json")).unwrap();
         let erc20_class_hash =
-            Felt252Wrapper::from_hex_be("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95").unwrap();
+            U256::from_str_radix("0x057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95", 16).unwrap();
 
         let tx_hash =
-            Felt252Wrapper::from_hex_be("0x02fc479a47d17efd76b69a1eb7731f1ac592948ab19b1047a087a43378d5a61a").unwrap();
+            U256::from_str_radix("0x02fc479a47d17efd76b69a1eb7731f1ac592948ab19b1047a087a43378d5a61a", 16).unwrap();
         let transaction = DeclareTransaction {
             sender_address: account_addr,
             contract_class: erc20_class,
             version: 1,
             compiled_class_hash: erc20_class_hash,
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
             signature: sign_message_hash(tx_hash),
         };
 
@@ -292,16 +293,16 @@ fn given_contract_declare_on_argent_account_with_incorrect_signature_then_it_fai
 
         let erc20_class = ContractClassWrapper::try_from(get_contract_class("erc20/erc20.json")).unwrap();
         let erc20_class_hash =
-            Felt252Wrapper::from_hex_be("057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95").unwrap();
+            U256::from_str_radix("057eca87f4b19852cfd4551cf4706ababc6251a8781733a0a11cf8e94211da95", 16).unwrap();
 
         let transaction = DeclareTransaction {
             sender_address: account_addr,
             contract_class: erc20_class,
             version: 1,
             compiled_class_hash: erc20_class_hash,
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
-            signature: bounded_vec!(Felt252Wrapper::ZERO, Felt252Wrapper::ONE),
+            nonce: U256::zero(),
+            max_fee: U256::from(u128::MAX),
+            signature: bounded_vec!(U256::zero(), U256::one()),
         };
 
         let validate_result = Starknet::validate_unsigned(

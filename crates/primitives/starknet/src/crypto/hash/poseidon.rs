@@ -2,9 +2,9 @@
 use poseidon_hash::convert::{felts_from_u8s, u8s_from_felts};
 use poseidon_hash::hash_sw8;
 use poseidon_hash::parameters::sw8::GF;
+use sp_core::U256;
 use starknet_crypto::FieldElement;
 
-use crate::execution::felt252_wrapper::Felt252Wrapper;
 use crate::traits::hash::{CryptoHasherT, DefaultHasher, HasherT};
 
 /// The poseidon hasher.
@@ -18,11 +18,9 @@ impl HasherT for PoseidonHasher {
     /// * `data` - The data to hash.
     /// # Returns
     /// The hash of the data.
-    fn hash(&self, data: &[u8]) -> Felt252Wrapper {
+    fn hash(&self, data: &[u8]) -> U256 {
         let input = felts_from_u8s::<GF>(data);
-        let binding = u8s_from_felts(&hash_sw8(&input));
-        let result = binding.as_slice();
-        result.try_into().unwrap() // TODO: remove unwrap
+        U256::from_big_endian(&u8s_from_felts(&hash_sw8(&input)))
     }
 }
 

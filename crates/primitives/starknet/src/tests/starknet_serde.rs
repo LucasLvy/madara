@@ -89,10 +89,10 @@ fn test_invalid_format_for_address() {
     // Not 32 bytes length, will still work because it's a valid hexa
     let json_content: &str = r#"{
       "version": 1,
-      "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
       "signature": [],
       "events": [],
-      "sender_address": "02356b628D108863BAf8644c945d97bAD70190",
+      "sender_address": "0000000000000000000000000002356b628D108863BAf8644c945d97bAD70190",
       "nonce": 0,
       "call_entrypoint": {
         "class_hash": "025ec026985a3bf8a0cc1fe17326b245dfdc3ff89b8fde106542a3ea56c5a918",
@@ -108,7 +108,7 @@ fn test_invalid_format_for_address() {
     // No valid hexa
     let json_content: &str = r#"{
       "version": 1,
-      "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
       "signature": [],
       "events": [],
       "sender_address": "Invalid",
@@ -130,7 +130,7 @@ fn test_missing_optional_field_no_error() {
     // class_hash in call_entrypoint is optional
     let json_content: &str = r#"{
       "version": 1,
-      "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
       "signature": [],
       "events": [],
       "sender_address": "02356b628D108863BAf8644c945d97bAD70190AF5957031f4852d00D0F690a77",
@@ -152,7 +152,7 @@ fn test_wrong_entrypoint_type() {
     // class_hash in call_entrypoint is optional
     let json_content: &str = r#"{
       "version": 1,
-      "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
       "signature": [],
       "events": [],
       "sender_address": "02356b628D108863BAf8644c945d97bAD70190AF5957031f4852d00D0F690a77",
@@ -166,6 +166,7 @@ fn test_wrong_entrypoint_type() {
     }"#;
 
     let transaction = transaction_from_json(json_content, &[]);
+    println!("{:?}", transaction);
     assert!(matches!(
         transaction,
         Err(DeserializeTransactionError::InvalidCallEntryPoint(DeserializeCallEntrypointError::InvalidEntryPointType))

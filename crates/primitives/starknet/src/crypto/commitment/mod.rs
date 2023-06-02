@@ -2,12 +2,11 @@ use alloc::vec;
 use alloc::vec::Vec;
 
 use bitvec::vec::BitVec;
-use sp_core::H256;
+use sp_core::{H256, U256};
 use starknet_crypto::FieldElement;
 
 use super::hash::pedersen::PedersenHasher;
 use super::merkle_patricia_tree::merkle_tree::MerkleTree;
-use crate::execution::types::Felt252Wrapper;
 use crate::traits::hash::CryptoHasherT;
 use crate::transaction::types::{
     DeclareTransaction, DeployAccountTransaction, EventWrapper, InvokeTransaction, Transaction,
@@ -126,16 +125,19 @@ where
     T: CryptoHasherT,
 {
     let signature_hash = <T as CryptoHasherT>::compute_hash_on_elements(
-        &tx.signature.iter().map(|elt| FieldElement::from(*elt)).collect::<Vec<FieldElement>>(),
+        &tx.signature
+            .iter()
+            .map(|&elt| FieldElement::from_bytes_be(&elt.into()).unwrap())
+            .collect::<Vec<FieldElement>>(),
     );
-    <T as CryptoHasherT>::hash(FieldElement::from(tx.hash), signature_hash)
+    <T as CryptoHasherT>::hash(FieldElement::from_bytes_be(&tx.hash.into()).unwrap(), signature_hash)
 }
 /// Computes the transaction hash of an invoke transaction.
 ///
 /// # Argument
 ///
 /// * `transaction` - The invoke transaction to get the hash of.
-pub fn calculate_invoke_tx_hash(transaction: InvokeTransaction, chain_id: &str) -> Felt252Wrapper {
+pub fn calculate_invoke_tx_hash(transaction: InvokeTransaction, chain_id: &str) -> U256 {
     calculate_transaction_hash_common::<PedersenHasher>(
         transaction.sender_address.into(),
         transaction.calldata.as_slice(),
@@ -152,7 +154,7 @@ pub fn calculate_invoke_tx_hash(transaction: InvokeTransaction, chain_id: &str) 
 /// # Argument
 ///
 /// * `transaction` - The declare transaction to get the hash of.
-pub fn calculate_declare_tx_hash(transaction: DeclareTransaction, chain_id: &str) -> Felt252Wrapper {
+pub fn calculate_declare_tx_hash(transaction: DeclareTransaction, chain_id: &str) -> U256 {
     calculate_transaction_hash_common::<PedersenHasher>(
         transaction.sender_address.into(),
         &[transaction.compiled_class_hash],
@@ -169,14 +171,10 @@ pub fn calculate_declare_tx_hash(transaction: DeclareTransaction, chain_id: &str
 /// # Argument
 ///
 /// * `transaction` - The deploy account transaction to get the hash of.
-pub fn calculate_deploy_account_tx_hash(transaction: DeployAccountTransaction, chain_id: &str) -> Felt252Wrapper {
+pub fn calculate_deploy_account_tx_hash(transaction: DeployAccountTransaction, chain_id: &str) -> U256 {
     calculate_transaction_hash_common::<PedersenHasher>(
         transaction.sender_address.into(),
-        &vec![
-            vec![transaction.account_class_hash, transaction.salt.try_into().expect("overflow from U256 to Felt252")],
-            transaction.calldata.to_vec(),
-        ]
-        .concat(),
+        &vec![vec![transaction.account_class_hash, transaction.salt], transaction.calldata.to_vec()].concat(),
         transaction.max_fee,
         transaction.nonce,
         transaction.version,
@@ -187,22 +185,23 @@ pub fn calculate_deploy_account_tx_hash(transaction: DeployAccountTransaction, c
 
 fn calculate_transaction_hash_common<T>(
     sender_address: [u8; 32],
-    calldata: &[Felt252Wrapper],
-    max_fee: Felt252Wrapper,
-    nonce: Felt252Wrapper,
+    calldata: &[U256],
+    max_fee: U256,
+    nonce: U256,
     version: u8,
     tx_prefix: &[u8],
     chain_id: &str,
-) -> Felt252Wrapper
+) -> U256
 where
     T: CryptoHasherT,
 {
     // All the values are validated before going through this function so it's safe to unwrap.
     let sender_address = FieldElement::from_bytes_be(&sender_address).unwrap();
     let calldata_hash = <T as CryptoHasherT>::compute_hash_on_elements(
-        &calldata.iter().map(|&val| FieldElement::from(val)).collect::<Vec<FieldElement>>(),
+        &calldata.iter().map(|&val| FieldElement::from_bytes_be(&val.into()).unwrap()).collect::<Vec<FieldElement>>(),
     );
     let max_fee = FieldElement::from_bytes_be(&max_fee.into()).unwrap();
+
     let nonce = FieldElement::from_bytes_be(&nonce.into()).unwrap();
     let version = FieldElement::from_byte_slice_be(&version.to_be_bytes()).unwrap();
     let tx_prefix = FieldElement::from_byte_slice_be(tx_prefix).unwrap();
@@ -220,7 +219,7 @@ where
         nonce,
     ]);
 
-    tx_hash.into()
+    U256::from_big_endian(&tx_hash.to_bytes_be())
 }
 
 /// Calculate the hash of an event.
@@ -229,11 +228,15 @@ where
 /// for details.
 pub fn calculate_event_hash<T: CryptoHasherT>(event: &EventWrapper) -> FieldElement {
     let keys_hash = T::compute_hash_on_elements(
-        &event.keys.iter().map(|key| FieldElement::from(*key)).collect::<Vec<FieldElement>>(),
+        &event.keys.iter().map(|&key| FieldElement::from_bytes_be(&key.into()).unwrap()).collect::<Vec<FieldElement>>(),
     );
     let data_hash = T::compute_hash_on_elements(
-        &event.data.iter().map(|data| FieldElement::from(*data)).collect::<Vec<FieldElement>>(),
+        &event
+            .data
+            .iter()
+            .map(|&data| FieldElement::from_bytes_be(&data.into()).unwrap())
+            .collect::<Vec<FieldElement>>(),
     );
-    let from_address = FieldElement::from(event.from_address);
+    let from_address = FieldElement::from_bytes_be(&event.from_address.into()).unwrap();
     T::compute_hash_on_elements(&[from_address, keys_hash, data_hash])
 }

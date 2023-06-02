@@ -1,7 +1,7 @@
 //! Pedersen hash module.
+use sp_core::U256;
 use starknet_crypto::{pedersen_hash, FieldElement};
 
-use crate::execution::felt252_wrapper::Felt252Wrapper;
 use crate::traits::hash::{CryptoHasherT, DefaultHasher, HasherT};
 
 /// The Pedersen hasher.
@@ -16,11 +16,11 @@ impl HasherT for PedersenHasher {
     /// * `data` - The data to hash.
     /// # Returns
     /// The hash of the data.
-    fn hash(&self, data: &[u8]) -> Felt252Wrapper {
+    fn hash(&self, data: &[u8]) -> U256 {
         // For now we use the first 31 bytes of the data as the field element, to avoid any panics.
         // TODO: have proper error handling and think about how to hash efficiently big chunks of data.
         let field_element = FieldElement::from_byte_slice_be(&data[..31]).unwrap();
-        Felt252Wrapper(pedersen_hash(&FieldElement::ZERO, &field_element))
+        U256::from_big_endian(&pedersen_hash(&FieldElement::ZERO, &field_element).to_bytes_be())
     }
 }
 

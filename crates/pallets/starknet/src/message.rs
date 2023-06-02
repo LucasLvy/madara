@@ -1,10 +1,9 @@
 use frame_support::BoundedVec;
-use mp_starknet::execution::types::{
-    CallEntryPointWrapper, ContractAddressWrapper, EntryPointTypeWrapper, Felt252Wrapper,
-};
+use mp_starknet::execution::types::{CallEntryPointWrapper, ContractAddressWrapper, EntryPointTypeWrapper};
 use mp_starknet::transaction::types::Transaction;
 use scale_codec::{Decode, Encode};
 use serde::Deserialize;
+use sp_core::U256;
 
 use crate::alloc::format;
 use crate::alloc::string::String;
@@ -49,13 +48,13 @@ impl Message {
             return Err(OffchainWorkerError::EmptyData);
         }
         // L2 contract to call.
-        let sender_address = match Felt252Wrapper::from_hex_be(self.topics[2].as_str()) {
+        let sender_address = match U256::from_str_radix(&self.topics[2], 16) {
             Ok(f) => f,
             Err(_) => return Err(OffchainWorkerError::ToTransactionError),
         };
 
         // Function of the contract to call.
-        let selector = match Felt252Wrapper::from_hex_be(self.topics[3].as_str()) {
+        let selector = match U256::from_str_radix(&self.topics[3], 16) {
             Ok(f) => f,
             Err(_) => return Err(OffchainWorkerError::ToTransactionError),
         };
@@ -68,12 +67,11 @@ impl Message {
         // string which is the concatenation of those fields).
         let data_map = char_vec.chunks(64).map(|chunk| chunk.iter().collect::<String>());
         // L1 message nonce.
-        let nonce =
-            Felt252Wrapper::from_hex_be(&data_map.clone().last().ok_or(OffchainWorkerError::ToTransactionError)?)
-                .map_err(|_| OffchainWorkerError::ToTransactionError)?;
-        let mut calldata: Vec<Felt252Wrapper> = Vec::new();
+        let nonce = U256::from_str_radix(&data_map.clone().last().ok_or(OffchainWorkerError::ToTransactionError)?, 16)
+            .map_err(|_| OffchainWorkerError::ToTransactionError)?;
+        let mut calldata: Vec<U256> = Vec::new();
         for val in data_map.take(self.data.len() - 2) {
-            calldata.push(match Felt252Wrapper::from_hex_be(val.as_str()) {
+            calldata.push(match U256::from_str_radix(&val, 16) {
                 Ok(f) => f,
                 Err(_) => return Err(OffchainWorkerError::ToTransactionError),
             })
@@ -103,19 +101,19 @@ mod test {
 
     #[test]
     fn test_try_into_transaction_correct_message_should_work() {
-        let felt_one = Felt252Wrapper::ONE;
+        let felt_one = U256::one();
         let sender_address = felt_one;
         let hex = "0x0000000000000000000000000000000000000000000000000000000000000001".to_owned();
         let test_message: Message =
             Message { topics: vec![hex.clone(), hex.clone(), hex.clone(), hex.clone()], data: hex };
         let expected_tx = Transaction {
             sender_address,
-            nonce: Felt252Wrapper::ONE,
+            nonce: U256::one(),
             call_entrypoint: CallEntryPointWrapper {
                 class_hash: None,
                 entrypoint_type: EntryPointTypeWrapper::L1Handler,
                 entrypoint_selector: Some(felt_one),
-                calldata: bounded_vec![Felt252Wrapper::ONE, Felt252Wrapper::ONE],
+                calldata: bounded_vec![U256::one(), U256::one()],
                 storage_address: felt_one,
                 caller_address: ContractAddressWrapper::default(),
             },

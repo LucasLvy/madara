@@ -15,8 +15,6 @@ pub mod call_entrypoint_wrapper;
 pub mod contract_class_wrapper;
 /// Entrypoint Wrapper related types
 pub mod entrypoint_wrapper;
-/// Felt252Wrapper type
-pub mod felt252_wrapper;
 /// Program Wrapper related types
 pub mod program_wrapper;
 
@@ -91,16 +89,17 @@ where
 /// All the types related to the execution of a transaction.
 pub mod types {
     /// Type wrapper for a contract address.
-    pub type ContractAddressWrapper = Felt252Wrapper;
+    pub type ContractAddressWrapper = U256;
 
     /// Type wrapper for a storage key;
-    pub type StorageKeyWrapper = Felt252Wrapper;
+    pub type StorageKeyWrapper = U256;
 
     /// Wrapper type for class hash field.
-    pub type ClassHashWrapper = Felt252Wrapper;
+    pub type ClassHashWrapper = U256;
+    use sp_core::U256;
+
     pub use super::call_entrypoint_wrapper::*;
     pub use super::contract_class_wrapper::*;
     pub use super::entrypoint_wrapper::*;
-    pub use super::felt252_wrapper::*;
     pub use super::program_wrapper::*;
 }

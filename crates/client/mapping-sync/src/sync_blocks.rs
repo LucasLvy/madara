@@ -48,14 +48,16 @@ where
                         // Success, we write the Starknet to Substate hashes mapping to db
                         let mapping_commitment = mc_db::MappingCommitment {
                             block_hash: substrate_block_hash,
-                            starknet_block_hash: digest_starknet_block_hash.into(),
+                            starknet_block_hash: H256::from_slice(&Into::<[u8; 32]>::into(digest_starknet_block_hash)),
                             starknet_transaction_hashes: match digest_starknet_block.transactions() {
-                                BlockTransactions::Full(transactions) => {
-                                    transactions.into_iter().map(|tx| H256::from(tx.hash)).collect()
-                                }
-                                BlockTransactions::Hashes(hashes) => {
-                                    hashes.into_iter().map(|hash| H256::from(*hash)).collect()
-                                }
+                                BlockTransactions::Full(transactions) => transactions
+                                    .into_iter()
+                                    .map(|tx| H256::from_slice(&Into::<[u8; 32]>::into(tx.hash)))
+                                    .collect(),
+                                BlockTransactions::Hashes(hashes) => hashes
+                                    .into_iter()
+                                    .map(|&hash| H256::from_slice(&Into::<[u8; 32]>::into(hash)))
+                                    .collect(),
                             },
                         };
 
@@ -89,7 +91,7 @@ where
     let block_hash = block.header().hash(*hasher);
     let mapping_commitment = mc_db::MappingCommitment::<B> {
         block_hash: substrate_block_hash,
-        starknet_block_hash: block_hash.into(),
+        starknet_block_hash: H256::from_slice(&Into::<[u8; 32]>::into(block_hash)),
         starknet_transaction_hashes: Vec::new(),
     };
 

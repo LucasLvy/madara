@@ -5,9 +5,8 @@ use alloc::vec::Vec;
 
 use frame_support::BoundedVec;
 pub use header::*;
-use sp_core::ConstU32;
+use sp_core::{ConstU32, U256};
 
-use crate::execution::types::Felt252Wrapper;
 use crate::transaction::types::{Transaction, TransactionReceiptWrapper};
 
 /// Block transactions max size
@@ -28,7 +27,7 @@ pub type MaxTransactions = ConstU32<4294967295>;
 #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
 pub enum BlockTransactions {
     /// Only hashes
-    Hashes(BoundedVec<Felt252Wrapper, MaxTransactions>),
+    Hashes(BoundedVec<U256, MaxTransactions>),
     /// Full transactions
     Full(BoundedVec<Transaction, MaxTransactions>),
 }
@@ -95,7 +94,7 @@ impl Block {
     }
 
     /// Return a reference to all transaction hashes
-    pub fn transactions_hashes(&self) -> Vec<Felt252Wrapper> {
+    pub fn transactions_hashes(&self) -> Vec<U256> {
         match &self.transactions {
             BlockTransactions::Full(transactions) => transactions.into_iter().map(|tx| tx.hash).collect(),
 
