@@ -65,7 +65,9 @@ pub extern crate alloc;
 use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
+use core::str::from_utf8_unchecked;
 
+use blockifier::block_context::BlockContext;
 use blockifier::execution::entry_point::{CallInfo, ExecutionResources};
 use blockifier_state_adapter::BlockifierStateAdapter;
 use frame_support::pallet_prelude::*;
@@ -87,9 +89,12 @@ use sp_core::U256;
 use sp_runtime::traits::UniqueSaturatedInto;
 use sp_runtime::DigestItem;
 use starknet_api::api_core::{ChainId, ContractAddress};
+use starknet_api::block::{BlockNumber, BlockTimestamp};
 use starknet_api::hash::StarkFelt;
+use starknet_api::stdlib::collections::HashMap;
 use starknet_api::transaction::{EventContent, TransactionHash};
 
+use crate::alloc::string::ToString;
 use crate::types::{ContractStorageKeyWrapper, NonceWrapper, StorageKeyWrapper};
 
 pub(crate) const LOG_TARGET: &str = "runtime::starknet";
@@ -116,7 +121,7 @@ macro_rules! log {
 #[frame_support::pallet]
 pub mod pallet {
 
-    use starknet_api::api_core::ChainId as StarknetChainId;
+    use blockifier::block_context::BlockContext;
 
     use super::*;
 
@@ -409,19 +414,34 @@ pub mod pallet {
             ensure!(ContractClassHashes::<T>::contains_key(transaction.sender_address), Error::<T>::AccountNotDeployed);
 
             // Get current block
-            let block = Self::current_block();
+            let block_number =
+                UniqueSaturatedInto::<u64>::unique_saturated_into(frame_system::Pallet::<T>::block_number());
+            let block_timestamp = Self::block_timestamp();
             // Get fee token address
-            let fee_token_address = Self::fee_token_address();
+            let fee_token_address =
+                ContractAddress::try_from(StarkFelt::new(Self::fee_token_address().into()).unwrap()).unwrap();
             let chain_id = Self::chain_id_str();
             let transaction: Transaction = transaction.from_invoke(&chain_id);
-            let call_info = transaction.execute(
-                &mut BlockifierStateAdapter::<T>::default(),
-                block.clone(),
-                TxType::Invoke,
-                None,
+            let sequencer_address = ContractAddress(starknet_api::api_core::PatriciaKey(StarkFelt(SEQUENCER_ADDRESS)));
+            let vm_resource_fee_cost = HashMap::default();
+            let invoke_tx_max_n_steps = 1000000;
+            let validate_max_n_steps = 1000000;
+            // FIXME: https://github.com/keep-starknet-strange/madara/issues/329
+            let gas_price = 10;
+            let block_context = BlockContext {
+                block_number: BlockNumber(block_number),
+                block_timestamp: BlockTimestamp(block_timestamp),
+                chain_id: ChainId(chain_id),
+                sequencer_address,
                 fee_token_address,
-                StarknetChainId(chain_id),
-            );
+                vm_resource_fee_cost,
+                invoke_tx_max_n_steps,
+                validate_max_n_steps,
+                gas_price,
+            };
+
+            let call_info =
+                transaction.execute(&mut BlockifierStateAdapter::<T>::default(), block_context, TxType::Invoke, None);
             let receipt = match call_info {
                 Ok(TransactionExecutionInfoWrapper {
                     validate_call_info: _validate_call_info,
@@ -453,8 +473,8 @@ pub mod pallet {
                         transaction_hash: transaction.hash,
                         tx_type: TxType::Invoke,
                         actual_fee: actual_fee.0.into(),
-                        block_hash: block.header().hash(T::SystemHash::hasher()), // unwrap to check.
-                        block_number: block.header().block_number.as_u64(),
+                        block_hash: U256::default(), // unwrap to check.
+                        block_number,
                     }
                 }
                 Err(e) => {
@@ -488,7 +508,6 @@ pub mod pallet {
         pub fn declare(origin: OriginFor<T>, transaction: DeclareTransaction) -> DispatchResult {
             // This ensures that the function can only be called via unsigned transaction.
             ensure_none(origin)?;
-
             let chain_id = Self::chain_id_str();
 
             let transaction: Transaction = transaction.from_declare(&chain_id);
@@ -505,9 +524,30 @@ pub mod pallet {
             ensure!(!ContractClasses::<T>::contains_key(class_hash), Error::<T>::ClassHashAlreadyDeclared);
 
             // Get current block
-            let block = Self::current_block();
+            let block_number =
+                UniqueSaturatedInto::<u64>::unique_saturated_into(frame_system::Pallet::<T>::block_number());
+            let block_timestamp = Self::block_timestamp();
             // Get fee token address
-            let fee_token_address = Self::fee_token_address();
+            let fee_token_address =
+                ContractAddress::try_from(StarkFelt::new(Self::fee_token_address().into()).unwrap()).unwrap();
+            let chain_id = Self::chain_id_str();
+            let sequencer_address = ContractAddress(starknet_api::api_core::PatriciaKey(StarkFelt(SEQUENCER_ADDRESS)));
+            let vm_resource_fee_cost = HashMap::default();
+            let invoke_tx_max_n_steps = 1000000;
+            let validate_max_n_steps = 1000000;
+            // FIXME: https://github.com/keep-starknet-strange/madara/issues/329
+            let gas_price = 10;
+            let block_context = BlockContext {
+                block_number: BlockNumber(block_number),
+                block_timestamp: BlockTimestamp(block_timestamp),
+                chain_id: ChainId(chain_id),
+                sequencer_address,
+                fee_token_address,
+                vm_resource_fee_cost,
+                invoke_tx_max_n_steps,
+                validate_max_n_steps,
+                gas_price,
+            };
 
             // Parse contract class
             let contract_class = contract_class.try_into().or(Err(Error::<T>::InvalidContractClass))?;
@@ -515,11 +555,9 @@ pub mod pallet {
             // Execute transaction
             let call_info = transaction.execute(
                 &mut BlockifierStateAdapter::<T>::default(),
-                block.clone(),
+                block_context,
                 TxType::Declare,
                 Some(contract_class),
-                fee_token_address,
-                StarknetChainId(chain_id),
             );
             let receipt = match call_info {
                 Ok(TransactionExecutionInfoWrapper {
@@ -551,8 +589,8 @@ pub mod pallet {
                         events: BoundedVec::try_from(events).map_err(|_| Error::<T>::ReachedBoundedVecLimit)?,
                         transaction_hash: transaction.hash,
                         tx_type: TxType::Declare,
-                        block_hash: block.header().hash(T::SystemHash::hasher()),
-                        block_number: block.header().block_number.as_u64(),
+                        block_hash: U256::default(),
+                        block_number,
                         actual_fee: actual_fee.0.into(),
                     }
                 }
@@ -601,17 +639,37 @@ pub mod pallet {
             let transaction: Transaction = transaction.from_deploy(&chain_id);
 
             // Get current block
-            let block = Self::current_block();
+            let block_number =
+                UniqueSaturatedInto::<u64>::unique_saturated_into(frame_system::Pallet::<T>::block_number());
+            let block_timestamp = Self::block_timestamp();
             // Get fee token address
-            let fee_token_address = Self::fee_token_address();
+            let fee_token_address =
+                ContractAddress::try_from(StarkFelt::new(Self::fee_token_address().into()).unwrap()).unwrap();
+            let chain_id = Self::chain_id_str();
+            let sequencer_address = ContractAddress(starknet_api::api_core::PatriciaKey(StarkFelt(SEQUENCER_ADDRESS)));
+            let vm_resource_fee_cost = HashMap::default();
+            let invoke_tx_max_n_steps = 1000000;
+            let validate_max_n_steps = 1000000;
+            // FIXME: https://github.com/keep-starknet-strange/madara/issues/329
+            let gas_price = 10;
+            let block_context = BlockContext {
+                block_number: BlockNumber(block_number),
+                block_timestamp: BlockTimestamp(block_timestamp),
+                chain_id: ChainId(chain_id),
+                sequencer_address,
+                fee_token_address,
+                vm_resource_fee_cost,
+                invoke_tx_max_n_steps,
+                validate_max_n_steps,
+                gas_price,
+            };
+
             // Execute transaction
             let call_info = transaction.execute(
                 &mut BlockifierStateAdapter::<T>::default(),
-                block.clone(),
+                block_context,
                 TxType::DeployAccount,
                 None,
-                fee_token_address,
-                StarknetChainId(chain_id),
             );
             let receipt = match call_info {
                 Ok(TransactionExecutionInfoWrapper {
@@ -643,8 +701,8 @@ pub mod pallet {
                         events: BoundedVec::try_from(events).map_err(|_| Error::<T>::ReachedBoundedVecLimit)?,
                         transaction_hash: transaction.hash,
                         tx_type: TxType::DeployAccount,
-                        block_hash: block.header().hash(T::SystemHash::hasher()),
-                        block_number: block.header().block_number.as_u64(),
+                        block_hash: U256::default(),
+                        block_number,
                         actual_fee: actual_fee.0.into(),
                     }
                 }
@@ -685,16 +743,36 @@ pub mod pallet {
             // Check if contract is deployed
             ensure!(ContractClassHashes::<T>::contains_key(transaction.sender_address), Error::<T>::AccountNotDeployed);
 
-            let block = Self::current_block();
-            let fee_token_address = Self::fee_token_address();
+            // Get current block
+            let block_number =
+                UniqueSaturatedInto::<u64>::unique_saturated_into(frame_system::Pallet::<T>::block_number());
+            let block_timestamp = Self::block_timestamp();
+            // Get fee token address
+            let fee_token_address =
+                ContractAddress::try_from(StarkFelt::new(Self::fee_token_address().into()).unwrap()).unwrap();
             let chain_id = Self::chain_id_str();
+            let sequencer_address = ContractAddress(starknet_api::api_core::PatriciaKey(StarkFelt(SEQUENCER_ADDRESS)));
+            let vm_resource_fee_cost = HashMap::default();
+            let invoke_tx_max_n_steps = 1000000;
+            let validate_max_n_steps = 1000000;
+            // FIXME: https://github.com/keep-starknet-strange/madara/issues/329
+            let gas_price = 10;
+            let block_context = BlockContext {
+                block_number: BlockNumber(block_number),
+                block_timestamp: BlockTimestamp(block_timestamp),
+                chain_id: ChainId(chain_id),
+                sequencer_address,
+                fee_token_address,
+                vm_resource_fee_cost,
+                invoke_tx_max_n_steps,
+                validate_max_n_steps,
+                gas_price,
+            };
             match transaction.execute(
                 &mut BlockifierStateAdapter::<T>::default(),
-                block,
+                block_context,
                 TxType::L1Handler,
                 None,
-                fee_token_address,
-                StarknetChainId(chain_id),
             ) {
                 Ok(v) => {
                     log!(debug, "Transaction executed successfully: {:?}", v);
@@ -762,7 +840,7 @@ pub mod pallet {
             // Once we have a real fee market this is where we'll chose the most profitable transaction.
             match call {
                 Call::invoke { transaction } => {
-                    let invoke_transaction = transaction.clone().from_invoke(&Self::chain_id_str());
+                    let invoke_transaction = transaction.clone().from_invoke_no_tx_hash();
                     Pallet::<T>::validate_tx(invoke_transaction, TxType::Invoke)?;
                     let mut tx = ValidTransaction::with_tag_prefix("starknet")
                         .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce).unwrap()))
@@ -847,7 +925,7 @@ impl<T: Config> Pallet<T> {
     /// convert chain_id
     #[inline(always)]
     pub fn chain_id_str() -> String {
-        format!("{:x}", Self::chain_id())
+        unsafe { from_utf8_unchecked(&Into::<[u8; 32]>::into(Self::chain_id())) }.to_string()
     }
 
     /// Get the block hash of the previous block.
@@ -1064,15 +1142,31 @@ impl<T: Config> Pallet<T> {
         // Check if contract is deployed
         ensure!(ContractClassHashes::<T>::contains_key(transaction.sender_address), Error::<T>::AccountNotDeployed);
 
+        // Get current block
+        let block_number = UniqueSaturatedInto::<u64>::unique_saturated_into(frame_system::Pallet::<T>::block_number());
+        let block_timestamp = Self::block_timestamp();
+        // Get fee token address
+        let fee_token_address =
+            ContractAddress::try_from(StarkFelt::new(Self::fee_token_address().into()).unwrap()).unwrap();
         let chain_id = Self::chain_id_str();
-        match transaction.execute(
-            &mut BlockifierStateAdapter::<T>::default(),
-            Self::current_block(),
-            TxType::Invoke,
-            None,
-            Self::fee_token_address(),
-            ChainId(chain_id),
-        ) {
+        let sequencer_address = ContractAddress::default();
+        let vm_resource_fee_cost = HashMap::default();
+        let invoke_tx_max_n_steps = 1000000;
+        let validate_max_n_steps = 1000000;
+        // FIXME: https://github.com/keep-starknet-strange/madara/issues/329
+        let gas_price = 10;
+        let block_context = BlockContext {
+            block_number: BlockNumber(block_number),
+            block_timestamp: BlockTimestamp(block_timestamp),
+            chain_id: ChainId(chain_id),
+            sequencer_address,
+            fee_token_address,
+            vm_resource_fee_cost,
+            invoke_tx_max_n_steps,
+            validate_max_n_steps,
+            gas_price,
+        };
+        match transaction.execute(&mut BlockifierStateAdapter::<T>::default(), block_context, TxType::Invoke, None) {
             Ok(v) => {
                 log!(debug, "Transaction executed successfully: {:?}", v);
                 if let Some(gas_usage) = v.actual_resources.get("l1_gas_usage") {

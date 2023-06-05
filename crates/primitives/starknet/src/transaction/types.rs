@@ -356,6 +356,28 @@ impl InvokeTransaction {
             max_fee: self.max_fee,
         }
     }
+    /// converts the transaction to a [Transaction] object
+    pub fn from_invoke_no_tx_hash(self) -> Transaction {
+        Transaction {
+            tx_type: TxType::Invoke,
+            version: self.version,
+            hash: U256::default(),
+            signature: self.signature,
+            sender_address: self.sender_address,
+            nonce: self.nonce,
+            call_entrypoint: CallEntryPointWrapper::new(
+                None,
+                EntryPointTypeWrapper::External,
+                None,
+                self.calldata,
+                self.sender_address,
+                self.sender_address,
+            ),
+            contract_class: None,
+            contract_address_salt: None,
+            max_fee: self.max_fee,
+        }
+    }
 }
 
 /// Representation of a Starknet transaction.
