@@ -89,6 +89,7 @@ use sp_runtime::traits::UniqueSaturatedInto;
 use sp_runtime::DigestItem;
 use starknet_api::api_core::{ChainId, ContractAddress};
 use starknet_api::transaction::{EventContent, TransactionHash};
+use starknet_crypto::FieldElement;
 
 use crate::alloc::string::ToString;
 use crate::types::{ContractStorageKeyWrapper, NonceWrapper, StorageKeyWrapper};
@@ -764,26 +765,50 @@ pub mod pallet {
             // determine an absolute priority. For now we use that for the benchmark (lowest nonce goes first)
             // otherwise we have a nonce error and everything fails.
             // Once we have a real fee market this is where we'll chose the most profitable transaction.
+            // To avoid nonce errors we add a dependency between the current tx and the tx with the previous
+            // nonce. Each transaction is provided a unique tag (here [from_address, nonce]) and the dependency
+            // is on [from_address, nonce -1] except for transactions with the nonce 0. This should reduce the
+            // nonce errors.
             match call {
                 Call::invoke { transaction } => {
                     let invoke_transaction = transaction.clone().from_invoke(&Self::chain_id_str());
                     Pallet::<T>::validate_tx(invoke_transaction, TxType::Invoke)?;
-                    ValidTransaction::with_tag_prefix("starknet")
+                    let mut tx = ValidTransaction::with_tag_prefix("starknet")
                         .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
-                        .and_provides((transaction.sender_address, transaction.nonce))
+                        // This is a transaction identifier for substrate
+                        .and_provides(vec![transaction.sender_address, transaction.nonce])
                         .longevity(64_u64)
-                        .propagate(true)
-                        .build()
+                        .propagate(true);
+                    // If the nonce is greater than zero, add a dependency between this transaction and the previous
+                    // one so that we don't get a nonce error.
+                    if transaction.nonce.0 > FieldElement::ZERO {
+                        tx = tx.and_requires(vec![
+                            transaction.sender_address,
+                            Felt252Wrapper(transaction.nonce.0 - FieldElement::ONE),
+                        ]);
+                    }
+
+                    tx.build()
                 }
                 Call::declare { transaction } => {
                     let declare_transaction = transaction.clone().from_declare(&Self::chain_id_str());
                     Pallet::<T>::validate_tx(declare_transaction, TxType::Declare)?;
-                    ValidTransaction::with_tag_prefix("starknet")
+                    let mut tx = ValidTransaction::with_tag_prefix("starknet")
                         .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
-                        .and_provides((transaction.sender_address, transaction.nonce))
+                        // This is a transaction identifier for substrate
+                        .and_provides(vec![transaction.sender_address, transaction.nonce])
                         .longevity(64_u64)
-                        .propagate(true)
-                        .build()
+                        .propagate(true);
+                    // If the nonce is greater than zero, add a dependency between this transaction and the previous
+                    // one so that we don't get a nonce error.
+                    if transaction.nonce.0 > FieldElement::ZERO {
+                        tx = tx.and_requires(vec![
+                            transaction.sender_address,
+                            Felt252Wrapper(transaction.nonce.0 - FieldElement::ONE),
+                        ]);
+                    }
+
+                    tx.build()
                 }
                 Call::deploy_account { transaction } => {
                     // don't validate deploy txs for now
@@ -792,19 +817,23 @@ pub mod pallet {
                         .from_deploy(&Self::chain_id_str())
                         .map_err(|_| TransactionValidityError::Unknown(UnknownTransaction::CannotLookup))?;
                     // Pallet::<T>::validate_tx(deploy_account_transaction, TxType::DeployAccount)?;
-                    ValidTransaction::with_tag_prefix("starknet")
+                    let tx = ValidTransaction::with_tag_prefix("starknet")
                         .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
-                        .and_provides((deploy_account_transaction.sender_address, transaction.nonce))
+                        // This is a transaction identifier for substrate
+                        .and_provides(vec![deploy_account_transaction.sender_address, transaction.nonce])
                         .longevity(64_u64)
-                        .propagate(true)
-                        .build()
+                        .propagate(true);
+                    tx.build()
                 }
-                Call::consume_l1_message { transaction } => ValidTransaction::with_tag_prefix("starknet")
-                    .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
-                    .and_provides((transaction.sender_address, transaction.nonce))
-                    .longevity(64_u64)
-                    .propagate(true)
-                    .build(),
+                Call::consume_l1_message { transaction } => {
+                    // Message consumptions don't go through an account contract so no need to identify them with an id.
+                    let tx = ValidTransaction::with_tag_prefix("starknet")
+                        .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
+                        .longevity(64_u64)
+                        .propagate(true);
+
+                    tx.build()
+                }
                 _ => InvalidTransaction::Call.into(),
             }
         }
