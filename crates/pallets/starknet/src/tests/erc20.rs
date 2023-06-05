@@ -22,10 +22,10 @@ fn given_erc20_transfer_when_invoke_then_it_works() {
         let sender_account = get_account_address(AccountType::NoValidate);
         // ERC20 is already declared for the fees.
         // Deploy ERC20 contract
-        let deploy_transaction = InvokeTransaction {
-            version: 1,
-            sender_address: sender_account,
-            calldata: bounded_vec![
+        let deploy_transaction = InvokeTransaction::new(
+            1,
+            sender_account,
+            bounded_vec![
                 sender_account, // Simple contract address
                 Felt252Wrapper::from_hex_be("0x02730079d734ee55315f4f141eaed376bddd8c2133523d223a344c5604e0f7f8")
                     .unwrap(), // deploy_contract selector
@@ -40,10 +40,10 @@ fn given_erc20_transfer_when_invoke_then_it_works() {
                 Felt252Wrapper::from_hex_be("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap(), // Initial supply high
                 sender_account  // recipient
             ],
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
-            signature: bounded_vec!(),
-        };
+            Felt252Wrapper::ZERO,
+            bounded_vec!(),
+            Felt252Wrapper::from(u128::MAX),
+        );
         let chain_id = Starknet::chain_id().0.to_bytes_be();
         let chain_id = std::str::from_utf8(&chain_id[..]).unwrap();
         let transaction_hash = calculate_invoke_tx_hash(deploy_transaction.clone(), chain_id);
@@ -110,10 +110,10 @@ fn given_erc20_transfer_when_invoke_then_it_works() {
         );
         // TODO: use dynamic values to craft invoke transaction
         // Transfer some token
-        let transfer_transaction = InvokeTransaction {
-            version: 1,
-            sender_address: sender_account,
-            calldata: bounded_vec![
+        let transfer_transaction = InvokeTransaction::new(
+            1,
+            sender_account,
+            bounded_vec![
                 expected_erc20_address, // Token address
                 Felt252Wrapper::from_hex_be("0x0083afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e")
                     .unwrap(), // transfer selector
@@ -122,10 +122,10 @@ fn given_erc20_transfer_when_invoke_then_it_works() {
                 Felt252Wrapper::from(15u128), // initial supply low
                 Felt252Wrapper::ZERO,   // initial supply high
             ],
-            nonce: Felt252Wrapper::ONE,
-            max_fee: Felt252Wrapper::from(u128::MAX),
-            signature: bounded_vec!(),
-        };
+            Felt252Wrapper::ONE,
+            bounded_vec!(),
+            Felt252Wrapper::from(u128::MAX),
+        );
         let chain_id = Starknet::chain_id().0.to_bytes_be();
         let chain_id = std::str::from_utf8(&chain_id[..]).unwrap();
         let transaction_hash = calculate_invoke_tx_hash(transfer_transaction.clone(), chain_id);

@@ -55,7 +55,7 @@ pub(crate) fn _encode_base64(data: &[u8]) -> String {
 
 pub fn to_tx(request: BroadcastedTransaction, chain_id: &str) -> Result<Transaction> {
     match request {
-        BroadcastedTransaction::Invoke(invoke_tx) => to_invoke_tx(invoke_tx).map(|inner| inner.from_invoke(chain_id)),
+        BroadcastedTransaction::Invoke(invoke_tx) => to_invoke_tx(invoke_tx).map(Into::<Transaction>::into),
         BroadcastedTransaction::Declare(_) => Err(StarknetError::FailedToReceiveTransaction.into()), /* TODO: add support once #341 is supported */
         BroadcastedTransaction::DeployAccount(deploy_account_tx) => to_deploy_account_tx(deploy_account_tx)
             .and_then(|inner| inner.from_deploy(chain_id).map_err(|e| anyhow!(e))),
@@ -65,21 +65,16 @@ pub fn to_tx(request: BroadcastedTransaction, chain_id: &str) -> Result<Transact
 pub fn to_invoke_tx(tx: BroadcastedInvokeTransaction) -> Result<InvokeTransaction> {
     match tx {
         BroadcastedInvokeTransaction::V0(_) => Err(StarknetError::FailedToReceiveTransaction.into()),
-        BroadcastedInvokeTransaction::V1(invoke_tx_v1) => Ok(InvokeTransaction {
-            version: 1_u8,
-            signature: BoundedVec::try_from(
-                invoke_tx_v1.signature.iter().map(|x| (*x).into()).collect::<Vec<Felt252Wrapper>>(),
-            )
-            .map_err(|e| anyhow!("failed to convert signature: {:?}", e))?,
-
-            sender_address: invoke_tx_v1.sender_address.into(),
-            nonce: Felt252Wrapper::from(invoke_tx_v1.nonce),
-            calldata: BoundedVec::try_from(
-                invoke_tx_v1.calldata.iter().map(|x| (*x).into()).collect::<Vec<Felt252Wrapper>>(),
-            )
-            .map_err(|e| anyhow!("failed to convert calldata: {:?}", e))?,
-            max_fee: Felt252Wrapper::from(invoke_tx_v1.max_fee),
-        }),
+        BroadcastedInvokeTransaction::V1(invoke_tx_v1) => Ok(InvokeTransaction::new(
+            1_u8,
+            invoke_tx_v1.sender_address.into(),
+            BoundedVec::try_from(invoke_tx_v1.calldata.iter().map(|x| (*x).into()).collect::<Vec<Felt252Wrapper>>())
+                .map_err(|e| anyhow!("failed to convert calldata: {:?}", e))?,
+            Felt252Wrapper::from(invoke_tx_v1.nonce),
+            BoundedVec::try_from(invoke_tx_v1.signature.iter().map(|x| (*x).into()).collect::<Vec<Felt252Wrapper>>())
+                .map_err(|e| anyhow!("failed to convert signature: {:?}", e))?,
+            Felt252Wrapper::from(invoke_tx_v1.max_fee),
+        )),
     }
 }
 

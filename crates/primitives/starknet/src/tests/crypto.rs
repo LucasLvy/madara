@@ -71,14 +71,15 @@ fn test_invoke_tx_hash() {
 
     let chain_id = "SN_GOERLI";
 
-    let transaction = InvokeTransaction {
-        version: 1,
-        sender_address: Felt252Wrapper::from(19911991_u128),
-        calldata: bounded_vec!(Felt252Wrapper::ONE, Felt252Wrapper::TWO, Felt252Wrapper::THREE),
-        nonce: Felt252Wrapper::ZERO,
-        signature: bounded_vec!(),
-        max_fee: Felt252Wrapper::ONE,
-    };
+    let transaction = InvokeTransaction::new(
+        1,
+        Felt252Wrapper::from(19911991_u128),
+        bounded_vec!(Felt252Wrapper::ONE, Felt252Wrapper::TWO, Felt252Wrapper::THREE),
+        Felt252Wrapper::ZERO,
+        bounded_vec!(),
+        Felt252Wrapper::ONE,
+    );
+
     assert_eq!(calculate_invoke_tx_hash(transaction, chain_id), expected_tx_hash);
 }
 

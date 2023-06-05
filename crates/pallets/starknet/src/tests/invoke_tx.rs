@@ -30,14 +30,14 @@ fn given_hardcoded_contract_run_invoke_tx_fails_sender_not_deployed() {
         let contract_address =
             Felt252Wrapper::from_hex_be("0x03e437FB56Bb213f5708Fcd6966502070e276c093ec271aA33433b89E21fd31f").unwrap();
 
-        let transaction = InvokeTransaction {
-            version: 1_u8,
-            sender_address: contract_address,
-            calldata: bounded_vec!(),
-            nonce: Felt252Wrapper::ZERO,
-            max_fee: Felt252Wrapper::from(u128::MAX),
-            signature: bounded_vec!(),
-        };
+        let transaction = InvokeTransaction::new(
+            1_u8,
+            contract_address,
+            bounded_vec!(),
+            Felt252Wrapper::ZERO,
+            bounded_vec!(),
+            Felt252Wrapper::from(u128::MAX),
+        );
 
         assert_err!(Starknet::invoke(none_origin, transaction), Error::<MockRuntime>::AccountNotDeployed);
     })
@@ -52,7 +52,14 @@ fn given_hardcoded_contract_run_invoke_tx_fails_invalid_tx_version() {
         let none_origin = RuntimeOrigin::none();
 
         let sender_add = get_account_address(AccountType::NoValidate);
-        let transaction = InvokeTransaction { version: 3, sender_address: sender_add, ..InvokeTransaction::default() };
+        let transaction = InvokeTransaction::new(
+            3,
+            sender_add,
+            bounded_vec!(),
+            Felt252Wrapper::default(),
+            bounded_vec!(),
+            Felt252Wrapper::ONE,
+        );
 
         assert_err!(Starknet::invoke(none_origin, transaction), Error::<MockRuntime>::TransactionExecutionFailed);
     });

@@ -417,7 +417,7 @@ pub mod pallet {
             // Get fee token address
             let fee_token_address = Self::fee_token_address();
             let chain_id = Self::chain_id_str();
-            let transaction: Transaction = transaction.from_invoke(&chain_id);
+            let transaction: Transaction = transaction.into();
             let call_info = transaction.execute(
                 &mut BlockifierStateAdapter::<T>::default(),
                 block.clone(),
@@ -771,7 +771,7 @@ pub mod pallet {
             // nonce errors.
             match call {
                 Call::invoke { transaction } => {
-                    let invoke_transaction = transaction.clone().from_invoke(&Self::chain_id_str());
+                    let invoke_transaction = transaction.clone().into();
                     Pallet::<T>::validate_tx(invoke_transaction, TxType::Invoke)?;
                     let mut tx = ValidTransaction::with_tag_prefix("starknet")
                         .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())

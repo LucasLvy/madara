@@ -28,9 +28,7 @@ use starknet_core::types::{
 };
 use thiserror_no_std::Error;
 
-use crate::crypto::commitment::{
-    calculate_declare_tx_hash, calculate_deploy_account_tx_hash, calculate_invoke_tx_hash,
-};
+use crate::crypto::commitment::{calculate_declare_tx_hash, calculate_deploy_account_tx_hash};
 use crate::execution::call_entrypoint_wrapper::MaxCalldataSize;
 use crate::execution::entrypoint_wrapper::EntryPointTypeWrapper;
 use crate::execution::types::{
@@ -343,6 +341,22 @@ pub struct InvokeTransaction {
     pub signature: BoundedVec<Felt252Wrapper, MaxArraySize>,
     /// Max fee.
     pub max_fee: Felt252Wrapper,
+    /// Hash
+    hash: Option<Felt252Wrapper>,
+}
+
+impl InvokeTransaction {
+    /// Creates a new instance of [InvokeTransaction]
+    pub fn new(
+        version: u8,
+        sender_address: ContractAddressWrapper,
+        calldata: BoundedVec<Felt252Wrapper, MaxCalldataSize>,
+        nonce: Felt252Wrapper,
+        signature: BoundedVec<Felt252Wrapper, MaxArraySize>,
+        max_fee: Felt252Wrapper,
+    ) -> Self {
+        Self { version, sender_address, calldata, nonce, signature, max_fee, hash: None }
+    }
 }
 
 impl From<Transaction> for InvokeTransaction {
@@ -354,31 +368,32 @@ impl From<Transaction> for InvokeTransaction {
             nonce: value.nonce,
             calldata: value.call_entrypoint.calldata,
             max_fee: value.max_fee,
+            hash: Some(value.hash),
         }
     }
 }
 
-impl InvokeTransaction {
+impl From<InvokeTransaction> for Transaction {
     /// converts the transaction to a [Transaction] object
-    pub fn from_invoke(self, chain_id: &str) -> Transaction {
+    fn from(value: InvokeTransaction) -> Transaction {
         Transaction {
             tx_type: TxType::Invoke,
-            version: self.version,
-            hash: calculate_invoke_tx_hash(self.clone(), chain_id),
-            signature: self.signature,
-            sender_address: self.sender_address,
-            nonce: self.nonce,
+            version: value.version,
+            hash: value.hash.unwrap(),
+            signature: value.signature,
+            sender_address: value.sender_address,
+            nonce: value.nonce,
             call_entrypoint: CallEntryPointWrapper::new(
                 None,
                 EntryPointTypeWrapper::External,
                 None,
-                self.calldata,
-                self.sender_address,
-                self.sender_address,
+                value.calldata,
+                value.sender_address,
+                value.sender_address,
             ),
             contract_class: None,
             contract_address_salt: None,
-            max_fee: self.max_fee,
+            max_fee: value.max_fee,
         }
     }
 }

@@ -35,14 +35,14 @@ fn given_call_contract_call_works() {
             sender_account  // recipient
         ];
 
-        let deploy_transaction = InvokeTransaction {
-            version: 1,
-            sender_address: sender_account,
-            signature: bounded_vec!(),
-            nonce: Felt252Wrapper::ZERO,
-            calldata: constructor_calldata,
-            max_fee: Felt252Wrapper::from(u128::MAX),
-        };
+        let deploy_transaction = InvokeTransaction::new(
+            1,
+            sender_account,
+            constructor_calldata,
+            Felt252Wrapper::ZERO,
+            bounded_vec!(),
+            Felt252Wrapper::from(u128::MAX),
+        );
 
         assert_ok!(Starknet::invoke(origin, deploy_transaction));
 

@@ -580,7 +580,7 @@ where
         let best_block_hash = self.client.info().best_hash;
         let invoke_tx = to_invoke_tx(invoke_transaction)?;
 
-        let transaction: MPTransaction = invoke_tx.from_invoke(&self.chain_id_str(best_block_hash)?);
+        let transaction: MPTransaction = invoke_tx.into();
         let extrinsic = self
             .client
             .runtime_api()
