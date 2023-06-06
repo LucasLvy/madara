@@ -1087,7 +1087,11 @@
         "value": "argent: guardian signature invalid"
       },
       {
-        "accessible_scopes": ["__main__", "__main__", "__main__.__validate__"],
+        "accessible_scopes": [
+          "__main__",
+          "__main__",
+          "__main__.__validate__"
+        ],
         "end_pc": 1561,
         "flow_tracking_data": {
           "ap_tracking": {
@@ -1101,7 +1105,12 @@
         "value": "argent: forbidden call"
       }
     ],
-    "builtins": ["pedersen", "range_check", "ecdsa", "ec_op"],
+    "builtins": [
+      "pedersen",
+      "range_check",
+      "ecdsa",
+      "ec_op"
+    ],
     "compiler_version": "0.10.3",
     "data": [
       "0x40780017fff7fff",
@@ -45231,7 +45240,11 @@
           }
         },
         "1640": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45245,7 +45258,11 @@
           }
         },
         "1642": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45283,7 +45300,11 @@
           }
         },
         "1643": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45297,7 +45318,11 @@
           }
         },
         "1645": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45323,7 +45348,11 @@
           }
         },
         "1646": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45373,7 +45402,11 @@
           }
         },
         "1647": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45387,7 +45420,11 @@
           }
         },
         "1648": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45401,7 +45438,11 @@
           }
         },
         "1650": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45415,7 +45456,11 @@
           }
         },
         "1652": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45441,7 +45486,11 @@
           }
         },
         "1653": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45467,7 +45516,11 @@
           }
         },
         "1654": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45493,7 +45546,11 @@
           }
         },
         "1655": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45507,7 +45564,11 @@
           }
         },
         "1657": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45533,7 +45594,11 @@
           }
         },
         "1658": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45559,7 +45624,11 @@
           }
         },
         "1659": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45621,7 +45690,11 @@
           }
         },
         "1660": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45671,7 +45744,11 @@
           }
         },
         "1661": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45685,7 +45762,11 @@
           }
         },
         "1662": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45723,7 +45804,11 @@
           }
         },
         "1663": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45761,7 +45846,11 @@
           }
         },
         "1664": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45775,7 +45864,11 @@
           }
         },
         "1666": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45837,7 +45930,11 @@
           }
         },
         "1667": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45875,7 +45972,11 @@
           }
         },
         "1668": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45937,7 +46038,11 @@
           }
         },
         "1669": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -45975,7 +46080,11 @@
           }
         },
         "1670": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -46013,7 +46122,11 @@
           }
         },
         "1671": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.__execute__"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.__execute__"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54669,7 +54782,11 @@
           }
         },
         "1907": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54707,7 +54824,11 @@
           }
         },
         "1908": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54745,7 +54866,11 @@
           }
         },
         "1909": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54783,7 +54908,11 @@
           }
         },
         "1910": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54809,7 +54938,11 @@
           }
         },
         "1911": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54835,7 +54968,11 @@
           }
         },
         "1912": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54849,7 +54986,11 @@
           }
         },
         "1914": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54899,7 +55040,11 @@
           }
         },
         "1915": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54913,7 +55058,11 @@
           }
         },
         "1917": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -54975,7 +55124,11 @@
           }
         },
         "1918": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -55037,7 +55190,11 @@
           }
         },
         "1919": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -55063,7 +55220,11 @@
           }
         },
         "1920": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -55089,7 +55250,11 @@
           }
         },
         "1921": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -55115,7 +55280,11 @@
           }
         },
         "1922": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -55129,7 +55298,11 @@
           }
         },
         "1924": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -55191,7 +55364,11 @@
           }
         },
         "1925": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -55241,7 +55418,11 @@
           }
         },
         "1926": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -55303,7 +55484,11 @@
           }
         },
         "1927": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.initialize"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.initialize"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56193,7 +56378,11 @@
           }
         },
         "1949": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56231,7 +56420,11 @@
           }
         },
         "1950": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56269,7 +56462,11 @@
           }
         },
         "1951": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56307,7 +56504,11 @@
           }
         },
         "1952": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56333,7 +56534,11 @@
           }
         },
         "1953": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56347,7 +56552,11 @@
           }
         },
         "1955": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56397,7 +56606,11 @@
           }
         },
         "1956": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56423,7 +56636,11 @@
           }
         },
         "1957": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56437,7 +56654,11 @@
           }
         },
         "1959": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56463,7 +56684,11 @@
           }
         },
         "1960": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56489,7 +56714,11 @@
           }
         },
         "1961": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56503,7 +56732,11 @@
           }
         },
         "1963": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56553,7 +56786,11 @@
           }
         },
         "1964": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56603,7 +56840,11 @@
           }
         },
         "1965": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56653,7 +56894,11 @@
           }
         },
         "1966": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56679,7 +56924,11 @@
           }
         },
         "1967": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -56705,7 +56954,11 @@
           }
         },
         "1968": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.upgrade"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.upgrade"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -69399,7 +69652,11 @@
           }
         },
         "2314": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getSigner"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getSigner"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -69437,7 +69694,11 @@
           }
         },
         "2315": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getSigner"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getSigner"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -69475,7 +69736,11 @@
           }
         },
         "2316": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getSigner"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getSigner"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -69513,7 +69778,11 @@
           }
         },
         "2317": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getSigner"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getSigner"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -69527,7 +69796,11 @@
           }
         },
         "2319": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getSigner"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getSigner"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -70572,7 +70845,11 @@
           }
         },
         "2346": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getGuardian"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getGuardian"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -70610,7 +70887,11 @@
           }
         },
         "2347": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getGuardian"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getGuardian"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -70648,7 +70929,11 @@
           }
         },
         "2348": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getGuardian"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getGuardian"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -70686,7 +70971,11 @@
           }
         },
         "2349": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getGuardian"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getGuardian"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -70700,7 +70989,11 @@
           }
         },
         "2351": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getGuardian"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getGuardian"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -72938,7 +73231,11 @@
           }
         },
         "2410": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getEscape"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getEscape"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -72976,7 +73273,11 @@
           }
         },
         "2411": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getEscape"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getEscape"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -73014,7 +73315,11 @@
           }
         },
         "2412": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getEscape"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getEscape"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -73052,7 +73357,11 @@
           }
         },
         "2413": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getEscape"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getEscape"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -73066,7 +73375,11 @@
           }
         },
         "2415": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getEscape"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getEscape"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -74142,7 +74455,11 @@
           }
         },
         "2443": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getVersion"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getVersion"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -74156,7 +74473,11 @@
           }
         },
         "2445": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getVersion"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getVersion"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -75036,7 +75357,11 @@
           }
         },
         "2469": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getName"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getName"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -75050,7 +75375,11 @@
           }
         },
         "2471": {
-          "accessible_scopes": ["__main__", "__main__", "__main__.getName"],
+          "accessible_scopes": [
+            "__main__",
+            "__main__",
+            "__main__.getName"
+          ],
           "flow_tracking_data": null,
           "hints": [],
           "inst": {
@@ -78628,7 +78957,10 @@
         "value": 206933470772
       },
       "__main__.__execute__": {
-        "decorators": ["external", "raw_output"],
+        "decorators": [
+          "external",
+          "raw_output"
+        ],
         "pc": 1640,
         "type": "function"
       },
@@ -78683,7 +79015,9 @@
         "value": 3
       },
       "__main__.__validate__": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 1485,
         "type": "function"
       },
@@ -78746,7 +79080,9 @@
         "value": 5
       },
       "__main__.__validate_declare__": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 1710,
         "type": "function"
       },
@@ -78797,7 +79133,10 @@
         "value": 1
       },
       "__main__.__validate_deploy__": {
-        "decorators": ["raw_input", "external"],
+        "decorators": [
+          "raw_input",
+          "external"
+        ],
         "pc": 1766,
         "type": "function"
       },
@@ -78970,7 +79309,9 @@
         "type": "alias"
       },
       "__main__.cancelEscape": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2237,
         "type": "function"
       },
@@ -79008,7 +79349,9 @@
         "value": 0
       },
       "__main__.changeGuardian": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2137,
         "type": "function"
       },
@@ -79051,7 +79394,9 @@
         "value": 0
       },
       "__main__.changeGuardianBackup": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2164,
         "type": "function"
       },
@@ -79094,7 +79439,9 @@
         "value": 0
       },
       "__main__.changeSigner": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2110,
         "type": "function"
       },
@@ -79137,7 +79484,9 @@
         "value": 0
       },
       "__main__.escapeGuardian": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2260,
         "type": "function"
       },
@@ -79180,7 +79529,9 @@
         "value": 0
       },
       "__main__.escapeSigner": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2287,
         "type": "function"
       },
@@ -79223,7 +79574,9 @@
         "value": 0
       },
       "__main__.execute_after_upgrade": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2022,
         "type": "function"
       },
@@ -79282,7 +79635,9 @@
         "type": "alias"
       },
       "__main__.getEscape": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2410,
         "type": "function"
       },
@@ -79320,7 +79675,9 @@
         "value": 0
       },
       "__main__.getGuardian": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2346,
         "type": "function"
       },
@@ -79358,7 +79715,9 @@
         "value": 0
       },
       "__main__.getGuardianBackup": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2378,
         "type": "function"
       },
@@ -79396,7 +79755,9 @@
         "value": 0
       },
       "__main__.getName": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2469,
         "type": "function"
       },
@@ -79421,7 +79782,9 @@
         "value": 0
       },
       "__main__.getSigner": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2314,
         "type": "function"
       },
@@ -79459,7 +79822,9 @@
         "value": 0
       },
       "__main__.getVersion": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2443,
         "type": "function"
       },
@@ -79492,7 +79857,9 @@
         "type": "alias"
       },
       "__main__.initialize": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 1907,
         "type": "function"
       },
@@ -79539,7 +79906,9 @@
         "value": 0
       },
       "__main__.isValidSignature": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 1821,
         "type": "function"
       },
@@ -79594,7 +79963,9 @@
         "value": 0
       },
       "__main__.is_valid_signature": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2495,
         "type": "function"
       },
@@ -79653,7 +80024,9 @@
         "type": "alias"
       },
       "__main__.supportsInterface": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 1871,
         "type": "function"
       },
@@ -79782,7 +80155,9 @@
         "type": "alias"
       },
       "__main__.triggerEscapeGuardian": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2191,
         "type": "function"
       },
@@ -79820,7 +80195,9 @@
         "value": 0
       },
       "__main__.triggerEscapeSigner": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2214,
         "type": "function"
       },
@@ -79858,7 +80235,9 @@
         "value": 0
       },
       "__main__.upgrade": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 1949,
         "type": "function"
       },
@@ -79909,7 +80288,10 @@
         "value": 0
       },
       "__wrappers__.__execute__": {
-        "decorators": ["external", "raw_output"],
+        "decorators": [
+          "external",
+          "raw_output"
+        ],
         "pc": 1672,
         "type": "function"
       },
@@ -79942,7 +80324,9 @@
         "type": "alias"
       },
       "__wrappers__.__validate__": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 1597,
         "type": "function"
       },
@@ -79975,7 +80359,9 @@
         "type": "alias"
       },
       "__wrappers__.__validate_declare__": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 1744,
         "type": "function"
       },
@@ -80008,7 +80394,10 @@
         "type": "alias"
       },
       "__wrappers__.__validate_deploy__": {
-        "decorators": ["raw_input", "external"],
+        "decorators": [
+          "raw_input",
+          "external"
+        ],
         "pc": 1800,
         "type": "function"
       },
@@ -80041,7 +80430,9 @@
         "type": "alias"
       },
       "__wrappers__.cancelEscape": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2243,
         "type": "function"
       },
@@ -80074,7 +80465,9 @@
         "type": "alias"
       },
       "__wrappers__.changeGuardian": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2144,
         "type": "function"
       },
@@ -80103,7 +80496,9 @@
         "type": "alias"
       },
       "__wrappers__.changeGuardianBackup": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2171,
         "type": "function"
       },
@@ -80140,7 +80535,9 @@
         "type": "alias"
       },
       "__wrappers__.changeSigner": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2117,
         "type": "function"
       },
@@ -80173,7 +80570,9 @@
         "type": "alias"
       },
       "__wrappers__.escapeGuardian": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2267,
         "type": "function"
       },
@@ -80206,7 +80605,9 @@
         "type": "alias"
       },
       "__wrappers__.escapeSigner": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2294,
         "type": "function"
       },
@@ -80239,7 +80640,9 @@
         "type": "alias"
       },
       "__wrappers__.execute_after_upgrade": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2065,
         "type": "function"
       },
@@ -80306,7 +80709,9 @@
         "type": "alias"
       },
       "__wrappers__.getEscape": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2426,
         "type": "function"
       },
@@ -80373,7 +80778,9 @@
         "type": "alias"
       },
       "__wrappers__.getGuardian": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2361,
         "type": "function"
       },
@@ -80402,7 +80809,9 @@
         "type": "alias"
       },
       "__wrappers__.getGuardianBackup": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2393,
         "type": "function"
       },
@@ -80507,7 +80916,9 @@
         "type": "alias"
       },
       "__wrappers__.getName": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2481,
         "type": "function"
       },
@@ -80574,7 +80985,9 @@
         "type": "alias"
       },
       "__wrappers__.getSigner": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2329,
         "type": "function"
       },
@@ -80641,7 +81054,9 @@
         "type": "alias"
       },
       "__wrappers__.getVersion": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2455,
         "type": "function"
       },
@@ -80708,7 +81123,9 @@
         "type": "alias"
       },
       "__wrappers__.initialize": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 1928,
         "type": "function"
       },
@@ -80741,7 +81158,9 @@
         "type": "alias"
       },
       "__wrappers__.isValidSignature": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 1840,
         "type": "function"
       },
@@ -80808,7 +81227,9 @@
         "type": "alias"
       },
       "__wrappers__.is_valid_signature": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 2514,
         "type": "function"
       },
@@ -80875,7 +81296,9 @@
         "type": "alias"
       },
       "__wrappers__.supportsInterface": {
-        "decorators": ["view"],
+        "decorators": [
+          "view"
+        ],
         "pc": 1887,
         "type": "function"
       },
@@ -80942,7 +81365,9 @@
         "type": "alias"
       },
       "__wrappers__.triggerEscapeGuardian": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2197,
         "type": "function"
       },
@@ -80975,7 +81400,9 @@
         "type": "alias"
       },
       "__wrappers__.triggerEscapeSigner": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 2220,
         "type": "function"
       },
@@ -81008,7 +81435,9 @@
         "type": "alias"
       },
       "__wrappers__.upgrade": {
-        "decorators": ["external"],
+        "decorators": [
+          "external"
+        ],
         "pc": 1988,
         "type": "function"
       },
@@ -84765,7 +85194,9 @@
         "type": "reference"
       },
       "starkware.cairo.common.math.is_quad_residue": {
-        "decorators": ["known_ap_change"],
+        "decorators": [
+          "known_ap_change"
+        ],
         "pc": 32,
         "type": "function"
       },
