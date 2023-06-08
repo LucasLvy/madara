@@ -3,8 +3,6 @@ use std::collections::BTreeMap;
 use anyhow::{anyhow, Result};
 use base64::engine::general_purpose;
 use base64::Engine;
-use cairo_vm::types::program::Program;
-use flate2::read::GzDecoder;
 use frame_support::inherent::BlockT;
 use mp_digest_log::find_starknet_block;
 use mp_starknet::block::Block as StarknetBlock;
@@ -136,11 +134,8 @@ pub fn to_deploy_account_tx(tx: BroadcastedDeployAccountTransaction) -> Result<D
 }
 
 /// Converts a broadcasted declare transaction to a declare transaction
-pub fn to_declare_tx(tx: BroadcastedDeclareTransaction) -> Result<DeclareTransaction> {
-    todo!();
-    // match tx {
+pub fn to_declare_tx(_tx: BroadcastedDeclareTransaction) -> Result<DeclareTransaction> {
     //     BroadcastedDeclareTransaction::V1(declare_tx_v1) => {
-    //         let signature = declare_tx_v1
     //             .signature
     //             .iter()
     //             .map(|f| (*f).into())

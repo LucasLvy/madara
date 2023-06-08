@@ -122,6 +122,8 @@ macro_rules! log {
 #[frame_support::pallet]
 pub mod pallet {
 
+    use starknet_crypto::FieldElement;
+
     use super::*;
 
     #[pallet::pallet]
@@ -755,15 +757,19 @@ pub mod pallet {
                 Call::invoke { transaction } => {
                     let invoke_transaction = transaction.clone().from_invoke(&Self::chain_id_str());
                     Pallet::<T>::validate_tx(invoke_transaction, TxType::Invoke)?;
-                    ValidTransaction::with_tag_prefix("starknet")
+                    let mut tx = ValidTransaction::with_tag_prefix("starknet")
                         .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
-                        .and_provides((transaction.sender_address, transaction.nonce))
+                        .and_provides(vec![transaction.sender_address, transaction.nonce])
                         .longevity(T::TransactionLongevity::get())
-                        .propagate(true)
-                        .build()
+                    if transaction.nonce.0 > FieldElement::ZERO {
+                        tx = tx.and_requires(vec![
+                            transaction.sender_address,
+                            Felt252Wrapper(transaction.nonce.0 - FieldElement::ONE),
+                        ])
+                    }
+                    tx.build()
                 }
                 Call::declare { transaction } => {
-                    let declare_transaction = transaction.clone().from_declare(&Self::chain_id_str());
                     Pallet::<T>::validate_tx(declare_transaction, TxType::Declare)?;
                     ValidTransaction::with_tag_prefix("starknet")
                         .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
