@@ -12,11 +12,11 @@ use mp_starknet::execution::types::{
 use mp_starknet::transaction::types::{DeclareTransaction, DeployAccountTransaction, InvokeTransaction, Transaction};
 use sp_api::HeaderT;
 use sp_blockchain::HeaderBackend;
-use sp_runtime::{BoundedBTreeMap, BoundedVec};
+use sp_runtime::BoundedVec;
 use starknet_core::types::{
     BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction,
-    BroadcastedTransaction, CompressedLegacyContractClass, ContractClass, FromByteArrayError, LegacyContractEntryPoint,
-    LegacyEntryPointsByType, StarknetError,
+    BroadcastedTransaction, ContractClass, FromByteArrayError, LegacyContractEntryPoint, LegacyEntryPointsByType,
+    StarknetError,
 };
 
 /// Returns a `ContractClass` from a `ContractClassWrapper`
@@ -37,20 +37,20 @@ pub fn to_rpc_contract_class(_contract_class_wrapped: ContractClassWrapper) -> R
 }
 
 /// Returns a base64 encoded and compressed string of the input bytes
-pub(crate) fn compress_and_encode_base64(data: &[u8]) -> Result<String> {
-    let data_compressed = compress(data)?;
-    Ok(encode_base64(&data_compressed))
+pub(crate) fn _compress_and_encode_base64(data: &[u8]) -> Result<String> {
+    let data_compressed = _compress(data)?;
+    Ok(_encode_base64(&data_compressed))
 }
 
 /// Returns a compressed vector of bytes
-pub(crate) fn compress(data: &[u8]) -> Result<Vec<u8>> {
+pub(crate) fn _compress(data: &[u8]) -> Result<Vec<u8>> {
     let mut gzip_encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::fast());
     serde_json::to_writer(&mut gzip_encoder, data)?;
     Ok(gzip_encoder.finish()?)
 }
 
 /// Returns a base64 encoded string of the input bytes
-pub(crate) fn encode_base64(data: &[u8]) -> String {
+pub(crate) fn _encode_base64(data: &[u8]) -> String {
     general_purpose::STANDARD.encode(data)
 }
 
@@ -135,7 +135,7 @@ pub fn to_deploy_account_tx(tx: BroadcastedDeployAccountTransaction) -> Result<D
 
 /// Converts a broadcasted declare transaction to a declare transaction
 pub fn to_declare_tx(_tx: BroadcastedDeclareTransaction) -> Result<DeclareTransaction> {
-    //     BroadcastedDeclareTransaction::V1(declare_tx_v1) => {
+    todo!()
     //             .signature
     //             .iter()
     //             .map(|f| (*f).into())
@@ -155,7 +155,6 @@ pub fn to_declare_tx(_tx: BroadcastedDeclareTransaction) -> Result<DeclareTransa
     //         let program: Program = Program::from_bytes(&decompressed_bytes, None)
     //             .map_err(|_| anyhow!("Failed to deserialize the contract class program"))?;
 
-
     //         })
     //     }
     //     BroadcastedDeclareTransaction::V2(_) =>
@@ -163,18 +162,18 @@ pub fn to_declare_tx(_tx: BroadcastedDeclareTransaction) -> Result<DeclareTransa
 }
 
 /// Returns a btree map of entry point types to entrypoint from deprecated entry point by type
-fn to_btree_map_entrypoints(
+fn _to_btree_map_entrypoints(
     entries: LegacyEntryPointsByType,
 ) -> BTreeMap<EntryPointTypeWrapper, BoundedVec<EntryPointWrapper, MaxEntryPoints>> {
     let mut entry_points_by_type: BTreeMap<EntryPointTypeWrapper, BoundedVec<EntryPointWrapper, MaxEntryPoints>> =
         BTreeMap::new();
 
-    entry_points_by_type.insert(EntryPointTypeWrapper::Constructor, get_entrypoint_value(entries.constructor));
-    entry_points_by_type.insert(EntryPointTypeWrapper::External, get_entrypoint_value(entries.external));
-    entry_points_by_type.insert(EntryPointTypeWrapper::L1Handler, get_entrypoint_value(entries.l1_handler));
+    entry_points_by_type.insert(EntryPointTypeWrapper::Constructor, _get_entrypoint_value(entries.constructor));
+    entry_points_by_type.insert(EntryPointTypeWrapper::External, _get_entrypoint_value(entries.external));
+    entry_points_by_type.insert(EntryPointTypeWrapper::L1Handler, _get_entrypoint_value(entries.l1_handler));
     entry_points_by_type
-
-fn to_legacy_entry_points_by_type(
+}
+fn _to_legacy_entry_points_by_type(
     entries: &BTreeMap<EntryPointTypeWrapper, BoundedVec<EntryPointWrapper, MaxEntryPoints>>,
 ) -> Result<LegacyEntryPointsByType> {
     let constructor = entries
@@ -201,7 +200,7 @@ fn to_legacy_entry_points_by_type(
 }
 
 /// Returns a bounded vector of `EntryPointWrapper` from a vector of LegacyContractEntryPoint
-fn get_entrypoint_value(entries: Vec<LegacyContractEntryPoint>) -> BoundedVec<EntryPointWrapper, MaxEntryPoints> {
+fn _get_entrypoint_value(entries: Vec<LegacyContractEntryPoint>) -> BoundedVec<EntryPointWrapper, MaxEntryPoints> {
     // We can unwrap safely as we already checked the length of the vectors
     BoundedVec::try_from(entries.iter().map(|e| EntryPointWrapper::from(e.clone())).collect::<Vec<_>>()).unwrap()
 }

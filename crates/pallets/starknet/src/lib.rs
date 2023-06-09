@@ -760,7 +760,7 @@ pub mod pallet {
                     let mut tx = ValidTransaction::with_tag_prefix("starknet")
                         .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
                         .and_provides(vec![transaction.sender_address, transaction.nonce])
-                        .longevity(T::TransactionLongevity::get())
+                        .longevity(T::TransactionLongevity::get());
                     if transaction.nonce.0 > FieldElement::ZERO {
                         tx = tx.and_requires(vec![
                             transaction.sender_address,
@@ -770,6 +770,7 @@ pub mod pallet {
                     tx.build()
                 }
                 Call::declare { transaction } => {
+                    let declare_transaction = transaction.clone().from_declare(&Self::chain_id_str());
                     Pallet::<T>::validate_tx(declare_transaction, TxType::Declare)?;
                     ValidTransaction::with_tag_prefix("starknet")
                         .priority(u64::MAX - (TryInto::<u64>::try_into(transaction.nonce)).unwrap())
