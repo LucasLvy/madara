@@ -893,7 +893,7 @@ dependencies = [
 [[package]]
 name = "cairo-felt"
 version = "0.3.0-rc1"
-source = "git+https://github.com/tdelabro/cairo-rs?branch=no_std-support#01b1aae8cd8ec52cc6b82c383fe655c28a8ed367"
+source = "git+https://github.com/tdelabro/cairo-rs?branch=no_std-support#c42035dc11fe0d8faa2a564a4660ba0c580653ba"
 dependencies = [
  "lazy_static",
  "num-bigint 0.4.3",
@@ -905,7 +905,7 @@ dependencies = [
 [[package]]
 name = "cairo-take_until_unbalanced"
 version = "0.24.2-rc1"
-source = "git+https://github.com/tdelabro/cairo-rs?branch=no_std-support#01b1aae8cd8ec52cc6b82c383fe655c28a8ed367"
+source = "git+https://github.com/tdelabro/cairo-rs?branch=no_std-support#c42035dc11fe0d8faa2a564a4660ba0c580653ba"
 dependencies = [
  "nom",
 ]
@@ -913,7 +913,7 @@ dependencies = [
 [[package]]
 name = "cairo-vm"
 version = "0.3.0-rc1"
-source = "git+https://github.com/tdelabro/cairo-rs?branch=no_std-support#01b1aae8cd8ec52cc6b82c383fe655c28a8ed367"
+source = "git+https://github.com/tdelabro/cairo-rs?branch=no_std-support#c42035dc11fe0d8faa2a564a4660ba0c580653ba"
 dependencies = [
  "anyhow",
  "bincode 2.0.0-rc.2",
@@ -9869,7 +9869,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
  "digest 0.10.7",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 
