@@ -12,11 +12,14 @@ use mp_starknet::execution::types::{
 use mp_starknet::transaction::types::{DeclareTransaction, DeployAccountTransaction, InvokeTransaction, Transaction};
 use sp_api::HeaderT;
 use sp_blockchain::HeaderBackend;
-use sp_runtime::{BoundedBTreeMap, BoundedVec};
+use sp_core::U256;
+use sp_runtime::BoundedVec;
+use starknet_api::api_core::{calculate_contract_address, ClassHash, ContractAddress as StarknetContractAddress};
+use starknet_api::hash::StarkFelt;
+use starknet_api::transaction::{Calldata, ContractAddressSalt};
 use starknet_core::types::{
     BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction,
-    BroadcastedTransaction, CompressedLegacyContractClass, ContractClass, FromByteArrayError, LegacyContractEntryPoint,
-    LegacyEntryPointsByType, StarknetError,
+    BroadcastedTransaction, ContractClass, LegacyEntryPointsByType, StarknetError,
 };
 
 /// Returns a `ContractClass` from a `ContractClassWrapper`
