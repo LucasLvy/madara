@@ -83,7 +83,7 @@ mc-transaction-pool = { workspace = true }
 mp-starknet = { workspace = true }
 pallet-starknet = { workspace = true }
 starknet-core = { workspace = true }
-
+cairo-lang-casm-contract-class = { workspace = true }
 # CLI-specific dependencies
 try-runtime-cli = { optional = true, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 

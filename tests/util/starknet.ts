@@ -3,10 +3,16 @@ import { type ApiPromise } from "@polkadot/api";
 import { type ApiTypes, type SubmittableExtrinsic } from "@polkadot/api/types";
 import { type ISubmittableResult } from "@polkadot/types/types";
 import { numberToHex, stringify, u8aWrapBytes } from "@polkadot/util";
-import { hash } from "starknet";
+import { hash, ec, constants, number } from "starknet";
+
 import erc20Json from "../../cairo-contracts/build/ERC20.json";
-import { NFT_CONTRACT_ADDRESS, UDC_CONTRACT_ADDRESS } from "../tests/constants";
+import {
+  NFT_CONTRACT_ADDRESS,
+  SIGNER_PRIVATE,
+  UDC_CONTRACT_ADDRESS,
+} from "../tests/constants";
 import { numberToU832Bytes } from "./utils";
+
 export async function sendTransactionNoValidation(
   transaction: SubmittableExtrinsic<"promise", ISubmittableResult>
 ): Promise<void> {
@@ -247,19 +253,39 @@ export function transfer(
   nonce?: number
 ): SubmittableExtrinsic<ApiTypes, ISubmittableResult> {
   // Initialize contract
+  const kp = ec.getKeyPair(SIGNER_PRIVATE);
+  const calldata = [
+    tokenAddress, // CONTRACT ADDRESS
+    "0x0083afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e", // SELECTOR (transfer)
+    "0x0000000000000000000000000000000000000000000000000000000000000003", // CALLDATA SIZE
+    recipientAddress,
+    transferAmount,
+    "0x0000000000000000000000000000000000000000000000000000000000000000",
+  ];
+  const sig = ec.sign(
+    kp,
+    hash.calculateTransactionHash(
+      contractAddress,
+      1,
+      calldata,
+      123456,
+      constants.StarknetChainId.TESTNET,
+      nonce ? nonce : 0
+    )
+  );
+
+  let r = number.toHexString(sig[0]);
+  r = r.length == 66 ? r : "0x" + r.slice(2).padStart(64, "0");
+  let s = number.toHexString(sig[1]);
+  s = s.length == 66 ? s : "0x" + s.slice(2).padStart(64, "0");
+
   const tx_transfer = {
     version: 1, // version of the transaction
-    signature: [], // leave empty for now, will be filled in when signing the transaction
+    signature: [r, s], // leave empty for now, will be filled in when signing the transaction
     sender_address: contractAddress, // address of the sender contract
     nonce: numberToU832Bytes(nonce ? nonce : 0), // nonce of the transaction
-    calldata: [
-      tokenAddress, // CONTRACT ADDRESS
-      "0x0083afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e", // SELECTOR (transfer)
-      "0x0000000000000000000000000000000000000000000000000000000000000003", // CALLDATA SIZE
-      recipientAddress,
-      transferAmount,
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-    ],
+    calldata,
+    maxFee: numberToU832Bytes(123456),
   };
 
   const extrisinc_transfer = api.tx.starknet.invoke(tx_transfer);

@@ -4383,6 +4383,7 @@ version = "0.1.0-alpha"
 dependencies = [
  "async-trait",
  "blockifier",
+ "cairo-lang-casm-contract-class",
  "clap",
  "frame-benchmarking",
  "frame-benchmarking-cli",

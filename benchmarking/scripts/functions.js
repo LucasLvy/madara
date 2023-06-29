@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
-const { ACCOUNT_CONTRACT } = require("../../tests/build/tests/tests/constants");
+const {
+  ACCOUNT_CONTRACT,
+  CAIRO1_CONTRACT_ADDRESS,
+  FEE_TOKEN_ADDRESS,
+} = require("../../tests/build/tests/tests/constants");
 const {
   initialize,
   mint,
@@ -27,8 +31,7 @@ function rpcMethods(userContext, events, done) {
 
 async function executeERC20Transfer(userContext, events, done) {
   const { nonce } = userContext.vars;
-  const contractAddress =
-    "0x0000000000000000000000000000000000000000000000000000000000000001";
+  const contractAddress = CAIRO1_CONTRACT_ADDRESS;
   const amount =
     "0x0000000000000000000000000000000000000000000000000000000000000001";
 
@@ -37,7 +40,7 @@ async function executeERC20Transfer(userContext, events, done) {
   transfer(
     userContext.api,
     contractAddress,
-    "0x040e59c2c182a58fb0a74349bfa4769cbbcba32547591dd3fb1def8623997d00",
+    FEE_TOKEN_ADDRESS,
     "0x0000000000000000000000000000000000000000000000000000000000000002",
     amount,
     nonce
