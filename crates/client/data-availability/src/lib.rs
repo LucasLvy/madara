@@ -142,7 +142,7 @@ where
             }
         }
         while let Some(block_da_data) = state_diffs_rx.next().await {
-            log::info!("Received state diff for block {}", block_da_data.block_hash);
+            log::info!("Received state diff for block {}", block_da_data.block_header.block_hash);
 
             let da_metrics = da_metrics.clone();
             let da_client = da_client.clone();
@@ -152,14 +152,15 @@ where
 
                 if let Err(err) = prove(
                     da_client.get_mode(),
-                    block_da_data.block_hash,
+                    block_da_data.block_header.block_hash,
                     &block_da_data.state_diff,
                     block_da_data.num_addr_accessed,
                     madara_backend.clone(),
+                    block_da_data.block_header.block_number.0,
                 )
                 .await
                 {
-                    log::error!("Failed to prove block: {err}");
+                    log::error!("Failed to prove block {}: {err}", block_da_data.block_header.block_number.0);
                 }
                 let prove_state_end = time::Instant::now();
 
@@ -187,7 +188,22 @@ pub async fn prove<B: BlockT>(
     _state_diff: &ThinStateDiff,
     _num_addr_accessed: usize,
     madara_backend: Arc<mc_db::Backend<B>>,
+    block_number: u64,
 ) -> Result<(), anyhow::Error> {
+    println!("Starting to prove block {block_number}");
+    let cmd = std::process::Command::new("/Users/lucas/snos/venv/bin/python3")
+        .arg("os/process_block.py")
+        .arg(block_number.to_string())
+        .output()
+        .expect("Failed to prove block {block_number}");
+    println!(
+        "Command output stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&cmd.stdout),
+        String::from_utf8_lossy(&cmd.stdout)
+    );
+    let pie = std::fs::read_to_string(format!("pies/block{}", block_number))?;
+
+    log::info!("Got pie for block {block_number}. Pie starts with {}", &pie[..20]);
     match da_mode {
         DaMode::Validity => {
             // Submit the Starknet OS PIE
@@ -195,7 +211,7 @@ pub async fn prove<B: BlockT>(
             // run the Starknet OS with the Cairo VM
             // extract the PIE from the Cairo VM run
             // pass the PIE to `submit_pie` and zip/base64 internal
-            if let Ok(job_resp) = sharp::submit_pie("TODO") {
+            if let Ok(job_resp) = sharp::submit_pie(&pie) {
                 log::info!("Proof job submitted with key '{}'", job_resp.cairo_job_key);
                 // Store the cairo job key
                 madara_backend

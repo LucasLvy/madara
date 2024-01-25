@@ -17,16 +17,19 @@ impl<T: crate::Config> From<GenesisLoader> for GenesisConfig<T> {
             .map(|(hash, class)| {
                 let hash = Felt252Wrapper(hash.0).into();
                 match class {
-                    ContractClass::Path { path, version } => (
-                        hash,
-                        read_contract_class_from_json(
-                            &std::fs::read_to_string(loader.base_path().join(path)).expect(
-                                "Some contract is missing in the config folder. Try to run `madara setup` before \
-                                 opening an issue.",
+                    ContractClass::Path { path, version } => {
+                        println!("{path:}");
+                        (
+                            hash,
+                            read_contract_class_from_json(
+                                &std::fs::read_to_string(loader.base_path().join(path)).expect(
+                                    "Some contract is missing in the config folder. Try to run `madara setup` before \
+                                     opening an issue.",
+                                ),
+                                version,
                             ),
-                            version,
-                        ),
-                    ),
+                        )
+                    }
                     ContractClass::Class(class) => (hash, class),
                 }
             })

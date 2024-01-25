@@ -5,7 +5,7 @@ mod Account {
     use ecdsa::check_ecdsa_signature;
     use option::OptionTrait;
     use starknet::account::Call;
-    use starknet::{ContractAddress, call_contract_syscall};
+    use starknet::{ContractAddress, call_contract_syscall, SyscallResultTrait};
     use zeroable::Zeroable;
     use array::ArraySerde;
 

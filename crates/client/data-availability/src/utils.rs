@@ -14,7 +14,7 @@ pub fn state_diff_to_calldata(mut block_da_data: BlockDAData) -> Vec<U256> {
     let mut calldata: Vec<U256> = vec![
         U256::from_big_endian(&block_da_data.previous_state_root.0), // prev merkle root
         U256::from_big_endian(&block_da_data.new_state_root.0),      // new merkle root
-        U256::from(block_da_data.block_number),                      // block number
+        U256::from(block_da_data.block_header.block_number.0),       // block number
         U256::from_big_endian(&block_da_data.block_hash.0.0),        // block hash
         U256::from_big_endian(&block_da_data.config_hash.0),         // config hash,
         U256::from(block_da_data.num_addr_accessed),                 // num_addr_accessed

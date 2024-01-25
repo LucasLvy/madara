@@ -1,31 +1,42 @@
+use std::io::Write;
 use std::marker::PhantomData;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::Poll;
 
+use blockifier::transaction::objects::TransactionExecutionInfo;
 use futures::channel::mpsc;
 use futures::Stream;
 use indexmap::{IndexMap, IndexSet};
 use mp_hashers::HasherT;
 use mp_storage::{SN_COMPILED_CLASS_HASH_PREFIX, SN_CONTRACT_CLASS_HASH_PREFIX, SN_NONCE_PREFIX, SN_STORAGE_PREFIX};
+use mp_transactions::Transaction;
 use pallet_starknet_runtime_api::StarknetRuntimeApi;
+use parity_scale_codec::{Decode, Encode};
 use sc_client_api::client::BlockchainEvents;
 use sc_client_api::{StorageEventStream, StorageNotification};
+use serde::{Deserialize, Serialize};
 use sp_api::ProvideRuntimeApi;
 use sp_blockchain::HeaderBackend;
 use sp_runtime::traits::{Block as BlockT, Header};
-use starknet_api::api_core::{ClassHash, CompiledClassHash, ContractAddress, Nonce, PatriciaKey};
-use starknet_api::block::BlockHash;
+use starknet_api::api_core::{ClassHash, CompiledClassHash, ContractAddress, GlobalRoot, Nonce, PatriciaKey};
+use starknet_api::block::{BlockHash, BlockHeader, BlockNumber, BlockTimestamp, GasPrice};
 use starknet_api::hash::{StarkFelt, StarkHash};
 use starknet_api::state::{StorageKey as StarknetStorageKey, ThinStateDiff};
 use thiserror::Error;
 
-#[derive(Clone)]
+#[derive(Debug, Encode, Decode, Serialize, Deserialize)]
+pub struct TransactionsWithExecInfo {
+    pub transactions: Vec<(Transaction, TransactionExecutionInfo)>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct BlockDAData {
     pub block_hash: BlockHash,
+    pub block_header: BlockHeader,
     pub state_diff: ThinStateDiff,
     pub num_addr_accessed: usize,
-    pub block_number: u64,
+    pub transactions: TransactionsWithExecInfo,
     pub config_hash: StarkHash,
     pub new_state_root: StarkHash,
     pub previous_state_root: StarkHash,
@@ -148,6 +159,12 @@ where
     C: HeaderBackend<B>,
     H: HasherT,
 {
+    let starknet_block = {
+        let header = client.header(storage_notification.block)?.ok_or(BuildCommitmentStateDiffError::BlockNotFound)?;
+        let digest = header.digest();
+        mp_digest_log::find_starknet_block(digest)?
+    };
+    let starknet_block_hash = starknet_block.header().hash::<H>().into();
     let mut accessed_addrs: IndexSet<ContractAddress> = IndexSet::new();
     let mut commitment_state_diff = ThinStateDiff {
         declared_classes: IndexMap::new(),
@@ -226,22 +243,29 @@ where
         }
     }
 
-    let current_block = {
-        let header = client.header(storage_notification.block)?.ok_or(BuildCommitmentStateDiffError::BlockNotFound)?;
-        let digest = header.digest();
-        mp_digest_log::find_starknet_block(digest)?
-    };
-
     let config_hash = client.runtime_api().config_hash(storage_notification.block)?;
 
-    Ok(BlockDAData {
-        block_hash: current_block.header().hash::<H>().into(),
-        state_diff: commitment_state_diff,
-        num_addr_accessed: accessed_addrs.len(),
-        block_number: current_block.header().block_number,
+    let mut file = std::fs::File::create(format!("blocks/block{}.json", starknet_block.header().block_number)).unwrap();
+    let header = starknet_block.header();
+    let da = BlockDAData {
+        block_hash: starknet_block_hash,
+        block_header: BlockHeader {
+            block_hash: BlockHash(StarkFelt([0; 32])),
+            parent_hash: BlockHash(header.parent_block_hash),
+            block_number: BlockNumber(header.block_number),
+            gas_price: GasPrice(header.l1_gas_price.price_in_wei),
+            state_root: GlobalRoot(backend.temporary_global_state_root_getter()),
+            sequencer: header.sequencer_address,
+            timestamp: BlockTimestamp(header.block_timestamp),
+        },
         config_hash,
-        // TODO: fix when we implement state root
+        state_diff: commitment_state_diff.clone(),
+        num_addr_accessed: accessed_addrs.len(),
+        transactions: TransactionsWithExecInfo { transactions: starknet_block.transactions().clone() },
         new_state_root: backend.temporary_global_state_root_getter(),
         previous_state_root: backend.temporary_global_state_root_getter(),
-    })
+    };
+    file.write_all(&serde_json::to_vec(&da).unwrap()).unwrap();
+
+    Ok(da)
 }

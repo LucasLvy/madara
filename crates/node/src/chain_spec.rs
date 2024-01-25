@@ -97,7 +97,7 @@ pub fn development_config(sealing: SealingMode, base_path: BasePath) -> Result<D
 }
 
 // helper to print development accounts info
-// accounts with addresses 0x1 and 0x4 are NO VALIDATE accounts (don't require PK)
+// accounts with addresses 0x5 and 0x4 are NO VALIDATE accounts (don't require PK)
 // accounts with addresses 0x2 and 0x3 have the same PK
 pub fn print_development_accounts(genesis_loader: &GenesisLoader) {
     // TODO: this is only true by luck. It's not enforced by anything
@@ -158,6 +158,10 @@ fn load_genesis(data_path: PathBuf) -> GenesisLoader {
     let genesis_file_content = std::fs::read_to_string(genesis_path)
         .expect("Failed to read genesis file. Please run `madara setup` before opening an issue.");
     let genesis_data: GenesisData = serde_json::from_str(&genesis_file_content).expect("Failed loading genesis");
+    let _cmd = std::process::Command::new("/Users/lucas/snos/venv/bin/python3")
+        .arg("os/genesis.py")
+        .output()
+        .expect("failed to load genesis block in python");
 
     GenesisLoader::new(data_path, genesis_data)
 }

@@ -516,13 +516,13 @@ where
                     .into_iter()
                     .zip(starknet_block.transactions())
                     .find(|(tx_hash, _)| *tx_hash == Felt252Wrapper(transaction_hash).into())
-                    .map(|(_, tx)| to_starknet_core_tx(tx.clone(), transaction_hash))
+                    .map(|(_, tx)| to_starknet_core_tx(tx.0.clone(), transaction_hash))
             } else {
                 starknet_block
                     .transactions()
                     .iter()
-                    .find(|tx| tx.compute_hash::<H>(chain_id, false).0 == transaction_hash)
-                    .map(|tx| to_starknet_core_tx(tx.clone(), transaction_hash))
+                    .find(|tx| tx.0.compute_hash::<H>(chain_id, false).0 == transaction_hash)
+                    .map(|tx| to_starknet_core_tx(tx.0.clone(), transaction_hash))
             };
 
         let execution_status = {
@@ -1106,10 +1106,10 @@ where
                     ))
                 })?
         } else {
-            transaction.compute_hash::<H>(chain_id.0.into(), false).0
+            transaction.0.compute_hash::<H>(chain_id.0.into(), false).0
         };
 
-        Ok(to_starknet_core_tx(transaction.clone(), transaction_hash))
+        Ok(to_starknet_core_tx(transaction.0.clone(), transaction_hash))
     }
 
     /// Get block information with full transactions given the block id.
@@ -1146,7 +1146,7 @@ where
         let opt_cached_transaction_hashes =
             self.get_cached_transaction_hashes(starknet_block.header().hash::<H>().into());
         let mut transactions = Vec::with_capacity(starknet_block.transactions().len());
-        for (index, tx) in starknet_block.transactions().iter().enumerate() {
+        for (index, (tx, _exec_info)) in starknet_block.transactions().iter().enumerate() {
             let tx_hash = if let Some(cached_tx_hashes) = opt_cached_transaction_hashes.as_ref() {
                 cached_tx_hashes
                     .get(index)
@@ -1363,13 +1363,13 @@ where
                     .into_iter()
                     .zip(starknet_block.transactions())
                     .find(|(tx_hash, _)| *tx_hash == Felt252Wrapper(transaction_hash).into())
-                    .map(|(_, tx)| to_starknet_core_tx(tx.clone(), transaction_hash))
+                    .map(|(_, tx)| to_starknet_core_tx(tx.0.clone(), transaction_hash))
             } else {
                 starknet_block
                     .transactions()
                     .iter()
-                    .find(|tx| tx.compute_hash::<H>(chain_id, false).0 == transaction_hash)
-                    .map(|tx| to_starknet_core_tx(tx.clone(), transaction_hash))
+                    .find(|tx| tx.0.compute_hash::<H>(chain_id, false).0 == transaction_hash)
+                    .map(|tx| to_starknet_core_tx(tx.0.clone(), transaction_hash))
             };
 
         find_tx.ok_or(StarknetRpcApiError::TxnHashNotFound.into())

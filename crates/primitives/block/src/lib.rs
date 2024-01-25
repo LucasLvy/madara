@@ -8,6 +8,7 @@ mod header;
 
 use alloc::vec::Vec;
 
+use blockifier::transaction::objects::TransactionExecutionInfo;
 pub use header::*;
 use mp_felt::Felt252Wrapper;
 use mp_hashers::HasherT;
@@ -15,7 +16,7 @@ use mp_transactions::compute_hash::ComputeTransactionHash;
 use mp_transactions::Transaction;
 
 /// Block Transactions
-pub type BlockTransactions = Vec<Transaction>;
+pub type BlockTransactions = Vec<(Transaction, TransactionExecutionInfo)>;
 
 /// Block tag.
 ///
@@ -79,7 +80,7 @@ impl Block {
         &self,
         chain_id: Felt252Wrapper,
     ) -> impl '_ + Iterator<Item = Felt252Wrapper> {
-        self.transactions.iter().map(move |tx| tx.compute_hash::<H>(chain_id, false))
+        self.transactions.iter().map(move |tx| tx.0.compute_hash::<H>(chain_id, false))
     }
 }
 

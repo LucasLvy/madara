@@ -77,6 +77,7 @@ pub enum UserTransaction {
 #[derive(Clone, Debug, Eq, PartialEq, From)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Transaction {
     Declare(DeclareTransaction),
     DeployAccount(DeployAccountTransaction),
@@ -95,6 +96,7 @@ pub enum UserAndL1HandlerTransaction {
 #[derive(Debug, Clone, Eq, PartialEq, From)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum InvokeTransaction {
     V0(InvokeTransactionV0),
     V1(InvokeTransactionV1),
@@ -103,6 +105,7 @@ pub enum InvokeTransaction {
 #[derive(Debug, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct InvokeTransactionV0 {
     pub max_fee: u128,
     pub signature: Vec<Felt252Wrapper>,
@@ -114,6 +117,7 @@ pub struct InvokeTransactionV0 {
 #[derive(Debug, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct InvokeTransactionV1 {
     pub max_fee: u128,
     pub signature: Vec<Felt252Wrapper>,
@@ -126,6 +130,7 @@ pub struct InvokeTransactionV1 {
 #[derive(Debug, Clone, Eq, PartialEq, From)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum DeclareTransaction {
     V0(DeclareTransactionV0),
     V1(DeclareTransactionV1),
@@ -135,6 +140,7 @@ pub enum DeclareTransaction {
 #[derive(Debug, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DeclareTransactionV0 {
     pub max_fee: u128,
     pub signature: Vec<Felt252Wrapper>,
@@ -146,6 +152,7 @@ pub struct DeclareTransactionV0 {
 #[derive(Debug, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DeclareTransactionV1 {
     pub max_fee: u128,
     pub signature: Vec<Felt252Wrapper>,
@@ -158,6 +165,7 @@ pub struct DeclareTransactionV1 {
 #[derive(Debug, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DeclareTransactionV2 {
     pub max_fee: u128,
     pub signature: Vec<Felt252Wrapper>,
@@ -171,6 +179,7 @@ pub struct DeclareTransactionV2 {
 #[derive(Debug, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DeployAccountTransaction {
     pub max_fee: u128,
     pub signature: Vec<Felt252Wrapper>,
@@ -184,6 +193,7 @@ pub struct DeployAccountTransaction {
 #[derive(Debug, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "parity-scale-codec", derive(parity_scale_codec::Encode, parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct HandleL1MessageTransaction {
     pub nonce: u64,
     pub contract_address: Felt252Wrapper,

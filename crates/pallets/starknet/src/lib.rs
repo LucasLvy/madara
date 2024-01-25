@@ -122,6 +122,8 @@ macro_rules! log {
 
 #[frame_support::pallet]
 pub mod pallet {
+    use blockifier::transaction::objects::TransactionExecutionInfo;
+
     use super::*;
 
     #[pallet::pallet]
@@ -205,7 +207,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::unbounded]
     #[pallet::getter(fn pending)]
-    pub(super) type Pending<T: Config> = StorageValue<_, Vec<Transaction>, ValueQuery>;
+    pub(super) type Pending<T: Config> = StorageValue<_, Vec<(Transaction, TransactionExecutionInfo)>, ValueQuery>;
 
     // Keep the hashes of the transactions stored in Pending
     // One should not be updated without the other !!!
@@ -519,7 +521,7 @@ pub mod pallet {
                 &tx_execution_infos.execute_call_info,
                 &tx_execution_infos.fee_transfer_call_info,
             );
-            Self::store_transaction(tx_hash, Transaction::Invoke(input_transaction), tx_execution_infos.revert_error);
+            Self::store_transaction(tx_hash, Transaction::Invoke(input_transaction), tx_execution_infos);
 
             Ok(())
         }
@@ -577,7 +579,7 @@ pub mod pallet {
                 &tx_execution_infos.execute_call_info,
                 &tx_execution_infos.fee_transfer_call_info,
             );
-            Self::store_transaction(tx_hash, Transaction::Declare(input_transaction), tx_execution_infos.revert_error);
+            Self::store_transaction(tx_hash, Transaction::Declare(input_transaction), tx_execution_infos);
 
             Ok(())
         }
@@ -628,11 +630,7 @@ pub mod pallet {
                 &tx_execution_infos.execute_call_info,
                 &tx_execution_infos.fee_transfer_call_info,
             );
-            Self::store_transaction(
-                tx_hash,
-                Transaction::DeployAccount(input_transaction),
-                tx_execution_infos.revert_error,
-            );
+            Self::store_transaction(tx_hash, Transaction::DeployAccount(input_transaction), tx_execution_infos);
 
             Ok(())
         }
@@ -692,11 +690,7 @@ pub mod pallet {
                 &tx_execution_infos.execute_call_info,
                 &tx_execution_infos.fee_transfer_call_info,
             );
-            Self::store_transaction(
-                tx_hash,
-                Transaction::L1Handler(input_transaction),
-                tx_execution_infos.revert_error,
-            );
+            Self::store_transaction(tx_hash, Transaction::L1Handler(input_transaction), tx_execution_infos);
 
             Ok(())
         }
@@ -1089,10 +1083,10 @@ impl<T: Config> Pallet<T> {
         }
     }
 
-    fn store_transaction(tx_hash: TransactionHash, tx: Transaction, revert_reason: Option<String>) {
-        Pending::<T>::append(tx);
+    fn store_transaction(tx_hash: TransactionHash, tx: Transaction, execution_infos: TransactionExecutionInfo) {
+        TxRevertError::<T>::set(tx_hash, execution_infos.revert_error.clone());
+        Pending::<T>::append((tx, execution_infos));
         PendingHashes::<T>::append(tx_hash);
-        TxRevertError::<T>::set(tx_hash, revert_reason);
     }
 
     pub fn chain_id() -> Felt252Wrapper {

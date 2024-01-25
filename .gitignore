@@ -42,3 +42,8 @@ cairo_venv
 # solidity cache
 starknet-e2e-test/contracts/cache
 starknet-e2e-test/contracts/build
+
+# snos
+blocks/**
+pies/**
+os/**

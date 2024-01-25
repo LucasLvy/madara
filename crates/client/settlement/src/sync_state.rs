@@ -253,7 +253,7 @@ where
 
         let chain_id = substrate_client.runtime_api().chain_id(substrate_block_hash)?;
 
-        for tx in next_block.transactions() {
+        for (tx, _exec_info) in next_block.transactions() {
             if let Transaction::L1Handler(l1_handler) = tx {
                 messages_to_l2.push(l1_handler.clone().into());
             }

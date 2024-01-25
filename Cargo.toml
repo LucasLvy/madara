@@ -211,8 +211,9 @@ starknet-signers = { git = "https://github.com/xJonathanLEI/starknet-rs.git", re
 starknet-accounts = { git = "https://github.com/xJonathanLEI/starknet-rs.git", rev = "64ebc36", default-features = false }
 starknet-contract = { git = "https://github.com/xJonathanLEI/starknet-rs.git", rev = "64ebc36", default-features = false }
 
-blockifier = { git = "https://github.com/keep-starknet-strange/blockifier", branch = "no_std-support-7578442", default-features = false, features = [
+blockifier = { git = "https://github.com/keep-starknet-strange/blockifier", rev = "df50571", default-features = false, features = [
   "parity-scale-codec",
+  "clone",
 ] }
 starknet_api = { git = "https://github.com/keep-starknet-strange/starknet-api", branch = "no_std-support-dc83f05", features = [
   "testing",
