@@ -44,6 +44,7 @@ starknet-e2e-test/contracts/cache
 starknet-e2e-test/contracts/build
 
 # snos
-blocks/**
-pies/**
-os/**
+blocks/block*.json
+pies/block*.b64
+os/genesis.py
+os/process_block.py

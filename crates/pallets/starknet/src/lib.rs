@@ -71,6 +71,7 @@ use blockifier::execution::entry_point::{
 };
 use blockifier::execution::errors::{EntryPointExecutionError, PreExecutionError};
 use blockifier::state::cached_state::ContractStorageKey;
+use blockifier::transaction::objects::TransactionExecutionInfo;
 use blockifier_state_adapter::BlockifierStateAdapter;
 use frame_support::pallet_prelude::*;
 use frame_support::traits::Time;

@@ -8,6 +8,7 @@ use blockifier::transaction::objects::TransactionExecutionInfo;
 use futures::channel::mpsc;
 use futures::Stream;
 use indexmap::{IndexMap, IndexSet};
+use mc_db::DbError;
 use mp_hashers::HasherT;
 use mp_storage::{SN_COMPILED_CLASS_HASH_PREFIX, SN_CONTRACT_CLASS_HASH_PREFIX, SN_NONCE_PREFIX, SN_STORAGE_PREFIX};
 use mp_transactions::Transaction;
@@ -22,7 +23,7 @@ use sp_runtime::traits::{Block as BlockT, Header};
 use starknet_api::api_core::{ClassHash, CompiledClassHash, ContractAddress, GlobalRoot, Nonce, PatriciaKey};
 use starknet_api::block::{BlockHash, BlockHeader, BlockNumber, BlockTimestamp, GasPrice};
 use starknet_api::hash::{StarkFelt, StarkHash};
-use starknet_api::state::{StorageKey as StarknetStorageKey, ThinStateDiff};
+use starknet_api::state::{ContractClass, StorageKey as StarknetStorageKey, ThinStateDiff};
 use thiserror::Error;
 
 #[derive(Debug, Encode, Decode, Serialize, Deserialize)]
@@ -40,6 +41,7 @@ pub struct BlockDAData {
     pub config_hash: StarkHash,
     pub new_state_root: StarkHash,
     pub previous_state_root: StarkHash,
+    pub sierra_class_hash_to_contract_class: IndexMap<ClassHash, ContractClass>,
 }
 
 pub struct CommitmentStateDiffWorker<B: BlockT, C, H> {
@@ -146,6 +148,10 @@ enum BuildCommitmentStateDiffError {
     DigestLogNotFound(#[from] mp_digest_log::FindLogError),
     #[error("failed to get config hash")]
     FailedToGetConfigHash(#[from] sp_api::ApiError),
+    #[error("failed to fetch contract class from class hash")]
+    FailedToFetchContractClass(#[from] DbError),
+    #[error("contract class not found")]
+    ContractClassNotFound,
 }
 
 fn build_commitment_state_diff<B: BlockT, C, H>(
@@ -174,7 +180,7 @@ where
         deprecated_declared_classes: Vec::new(),
         replaced_classes: IndexMap::new(),
     };
-
+    let mut sierra_class_hash_to_contract_class = IndexMap::new();
     for (_prefix, full_storage_key, change) in storage_notification.changes.iter() {
         // The storages we are interested in all have prefix of length 32 bytes.
         // The pallet identifier takes 16 bytes, the storage one 16 bytes.
@@ -240,6 +246,13 @@ where
                 CompiledClassHash(change.map(|data| StarkFelt(data.0.clone().try_into().unwrap())).unwrap_or_default());
 
             commitment_state_diff.declared_classes.insert(class_hash, compiled_class_hash);
+            sierra_class_hash_to_contract_class.insert(
+                class_hash,
+                backend
+                    .sierra_classes()
+                    .get_sierra_class(class_hash.0)?
+                    .ok_or(BuildCommitmentStateDiffError::ContractClassNotFound)?,
+            );
         }
     }
 
@@ -264,6 +277,7 @@ where
         transactions: TransactionsWithExecInfo { transactions: starknet_block.transactions().clone() },
         new_state_root: backend.temporary_global_state_root_getter(),
         previous_state_root: backend.temporary_global_state_root_getter(),
+        sierra_class_hash_to_contract_class,
     };
     file.write_all(&serde_json::to_vec(&da).unwrap()).unwrap();
 
